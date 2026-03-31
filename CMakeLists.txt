@@ -58,3 +58,8 @@ foreach(_file ${PRADSIM_RESOURCE_FILES})
     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/${_file} ${PROJECT_BINARY_DIR}/${_file}
   )
 endforeach()
+
+# Copy JSON configuration files to build directory
+add_custom_command(TARGET copy_files POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/config ${PROJECT_BINARY_DIR}/config
+)

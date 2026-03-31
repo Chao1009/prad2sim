@@ -1,0 +1,10 @@
+{
+    "_comment": "Test configuration with minimal geometry. Overrides defaults.json.",
+    "_base": "defaults.json",
+    "config": "test",
+
+    "world": {
+        "size_xy": 10.0,
+        "size_z": 100.0
+    }
+}

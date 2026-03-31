@@ -1,0 +1,59 @@
+{
+    "_comment": "PRadSim default configuration. Lengths in cm, energies in MeV, angles in deg.",
+    "config": "prad",
+
+    "world": {
+        "size_xy": 150.0,
+        "size_z": 600.0
+    },
+
+    "target": {
+        "center": -291.1,
+        "radius": 14.5,
+        "half_length": 2.75,
+        "material": "D2Gas",
+        "density_ratio": 1.0
+    },
+
+    "recoil_detector": {
+        "n_segments": 20,
+        "radius": 13.5,
+        "half_length": 2.6,
+        "l1_thickness_um": 200,
+        "l2_thickness_um": 300
+    },
+
+    "gem": {
+        "center": [217.5, 257.5]
+    },
+
+    "scintillator_plane": {
+        "center": 262.5
+    },
+
+    "hycal": {
+        "crystal_surface": 295.0,
+        "attenuation_lg": 0.0,
+        "reflectance_lg": 1.0
+    },
+
+    "sensitive_detectors": {
+        "target": false,
+        "recoil": false,
+        "gem": true,
+        "scintillator_plane": false,
+        "hycal": true,
+        "virtual": false
+    },
+
+    "ext_density_ratio": 1.0,
+
+    "generator": {
+        "type": "ring",
+        "event_type": "elastic",
+        "beam_energy": 1100.0,
+        "vertex": [0.0, 0.0, -300.0],
+        "theta_range": [0.5, 6.5],
+        "energy_range": [1e-4, 1.0]
+    }
+}

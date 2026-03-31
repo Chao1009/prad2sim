@@ -42,6 +42,7 @@
 #include "G4String.hh"
 #include "G4ThreeVector.hh"
 
+class SimConfig;
 class G4VPrimaryGenerator;
 
 class PrimaryGeneratorMessenger;
@@ -51,7 +52,7 @@ class PrimaryGeneratorMessenger;
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
 public:
-    PrimaryGeneratorAction(G4String conf);
+    PrimaryGeneratorAction(G4String conf, const SimConfig &config);
     virtual ~PrimaryGeneratorAction();
 
     void GeneratePrimaries(G4Event *);

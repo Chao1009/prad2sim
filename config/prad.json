@@ -1,0 +1,13 @@
+{
+    "_comment": "PRad experiment configuration. Overrides defaults.json.",
+    "_base": "defaults.json",
+    "config": "prad",
+
+    "gem": {
+        "center": [229.99575, 257.5]
+    },
+
+    "hycal": {
+        "crystal_surface": 273.515
+    }
+}

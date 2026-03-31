@@ -38,6 +38,7 @@
 
 #include "PrimaryGenerator.hh"
 #include "PrimaryGeneratorMessenger.hh"
+#include "SimConfig.hh"
 
 #include "G4Event.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
@@ -47,10 +48,34 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf) : G4VUserPrimaryGeneratorAction(), fConfig(conf), fGunType("ring"), fEventType("elastic"), fE(1100 * MeV), fX(0), fY(0), fZ(-300.0 * cm), fTheta(0), fPhi(0), fThetaLo(0.5 * deg), fThetaHi(6.5 * deg), fEnpLo(1e-4), fEnpHi(1), fPrimaryGenerator(NULL)
+PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf, const SimConfig &config) : G4VUserPrimaryGeneratorAction(), fConfig(conf), fPrimaryGenerator(NULL)
 {
     if (fConfig != "prad" && fConfig != "drad")
         fConfig = "prad";
+
+    // Load generator parameters from config
+    fGunType = config.GetString("generator", "type", "ring");
+    fEventType = config.GetString("generator", "event_type", "elastic");
+    fE = config.GetDouble("generator", "beam_energy", 1100.0) * MeV;
+
+    std::vector<double> vtxDefault = {0.0, 0.0, -300.0};
+    std::vector<double> vtx = config.GetDoubleArray("generator", "vertex", vtxDefault);
+    fX = (vtx.size() > 0 ? vtx[0] : 0.0) * cm;
+    fY = (vtx.size() > 1 ? vtx[1] : 0.0) * cm;
+    fZ = (vtx.size() > 2 ? vtx[2] : -300.0) * cm;
+
+    fTheta = 0;
+    fPhi = 0;
+
+    std::vector<double> thetaDefault = {0.5, 6.5};
+    std::vector<double> thetaRange = config.GetDoubleArray("generator", "theta_range", thetaDefault);
+    fThetaLo = (thetaRange.size() > 0 ? thetaRange[0] : 0.5) * deg;
+    fThetaHi = (thetaRange.size() > 1 ? thetaRange[1] : 6.5) * deg;
+
+    std::vector<double> enpDefault = {1e-4, 1.0};
+    std::vector<double> enpRange = config.GetDoubleArray("generator", "energy_range", enpDefault);
+    fEnpLo = enpRange.size() > 0 ? enpRange[0] : 1e-4;
+    fEnpHi = enpRange.size() > 1 ? enpRange[1] : 1.0;
 
     fRecoilParticle.clear();
     fEventFile.clear();

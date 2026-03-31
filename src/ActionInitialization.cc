@@ -36,6 +36,7 @@
 
 #include "EventAction.hh"
 #include "PrimaryGeneratorAction.hh"
+#include "SimConfig.hh"
 #include "SteppingVerbose.hh"
 #include "TrackingAction.hh"
 
@@ -46,7 +47,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::ActionInitialization(G4String conf) : G4VUserActionInitialization(), fConfig(conf)
+ActionInitialization::ActionInitialization(G4String conf, const SimConfig &config) : G4VUserActionInitialization(), fConfig(conf), fSimConfig(config)
 {
     //
 }
@@ -62,7 +63,7 @@ ActionInitialization::~ActionInitialization()
 
 void ActionInitialization::Build() const
 {
-    SetUserAction(new PrimaryGeneratorAction(fConfig));
+    SetUserAction(new PrimaryGeneratorAction(fConfig, fSimConfig));
     SetUserAction(new EventAction(fConfig));
     SetUserAction(new TrackingAction());
 }

@@ -1,0 +1,14 @@
+{
+    "_comment": "DRad experiment configuration. Overrides defaults.json.",
+    "_base": "defaults.json",
+    "config": "drad",
+
+    "sensitive_detectors": {
+        "target": false,
+        "recoil": true,
+        "gem": true,
+        "scintillator_plane": true,
+        "hycal": true,
+        "virtual": false
+    }
+}

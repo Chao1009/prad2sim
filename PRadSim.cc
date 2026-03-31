@@ -39,6 +39,7 @@
 #include "PhysListEmModified.hh"
 #include "PhysListPureEm.hh"
 #include "RootTree.hh"
+#include "SimConfig.hh"
 #include "SteppingVerbose.hh"
 
 #include "G4PhysListFactory.hh"
@@ -75,7 +76,7 @@ RootTree *gRootTree = 0;
 void usage(int, char **argv)
 {
     printf("usage: %s [options] [MACRO_NAME]\n", argv[0]);
-    printf("  -c, --conf=prad          Set configuration\n");
+    printf("  -c, --conf=FILE          Set JSON config file (default: config/prad.json)\n");
     printf("  -s, --seed=1             Set random seed\n");
     printf("  -p, --physics=FTFP_BERT  Set physics list\n");
     printf("  -h, --help               Print usage\n");
@@ -85,7 +86,7 @@ void usage(int, char **argv)
 
 int main(int argc, char **argv)
 {
-    std::string conf = "prad";
+    std::string conf_file = "config/prad.json";
     std::string physics_list = "FTFP_BERT";
     std::string seed = "random";
     std::string macro;
@@ -108,7 +109,7 @@ int main(int argc, char **argv)
 
         switch (c) {
         case 'c':
-            conf = optarg;
+            conf_file = optarg;
             break;
 
         case 'h':
@@ -234,11 +235,20 @@ int main(int argc, char **argv)
 
     runManager->SetUserInitialization(physicsList);
 
+    // Load JSON configuration
+    SimConfig simConfig;
+
+    if (!simConfig.Load(conf_file))
+        std::cout << "SimConfig: using hardcoded defaults (no JSON config loaded)" << std::endl;
+
+    // Read the configuration name (prad/drad/test) from the JSON file
+    std::string conf = simConfig.GetString("config", "prad");
+
     // Set mandatory initialization classes
-    DetectorConstruction *detector = new DetectorConstruction(conf);
+    DetectorConstruction *detector = new DetectorConstruction(conf, simConfig);
     runManager->SetUserInitialization(detector);
 
-    ActionInitialization *action = new ActionInitialization(conf);
+    ActionInitialization *action = new ActionInitialization(conf, simConfig);
     runManager->SetUserInitialization(action);
 
     // Get the pointer to the User Interface manager

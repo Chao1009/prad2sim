@@ -43,6 +43,7 @@
 
 #include <map>
 
+class SimConfig;
 class DetectorMessenger;
 
 class G4LogicalVolume;
@@ -54,7 +55,7 @@ class G4VPhysicalVolume;
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
 public:
-    DetectorConstruction(G4String conf);
+    DetectorConstruction(G4String conf, const SimConfig &config);
     virtual ~DetectorConstruction();
 
 public:

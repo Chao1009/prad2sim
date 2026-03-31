@@ -39,6 +39,7 @@
 #include "CalorimeterSD.hh"
 #include "CheckScatteringSD.hh"
 #include "DetectorMessenger.hh"
+#include "SimConfig.hh"
 #include "StandardDetectorSD.hh"
 #include "StepRecordSD.hh"
 #include "TrackingDetectorSD.hh"
@@ -81,59 +82,61 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DetectorConstruction::DetectorConstruction(G4String conf) : G4VUserDetectorConstruction(), fConfig(conf)
+DetectorConstruction::DetectorConstruction(G4String conf, const SimConfig &config) : G4VUserDetectorConstruction(), fConfig(conf)
 {
     if (fConfig != "prad" && fConfig != "drad" && fConfig != "test")
         fConfig = "prad";
 
     fVisAtts.clear();
 
-    fWorldSizeXY = 150.0 * cm;
-    fWorldSizeZ = 600.0 * cm;
+    // World geometry
+    fWorldSizeXY = config.GetDouble("world", "size_xy", 150.0) * cm;
+    fWorldSizeZ = config.GetDouble("world", "size_z", 600.0) * cm;
 
-    fTargetCenter = -300.0 * cm + 89.0 * mm; // PRad survey
-    fTargetR = 14.5 * cm;
-    fTargetHalfL = 2.75 * cm;
-    fTargetMat = "D2Gas";
-    fTargetDensityRatio = 1.0;
+    // Target
+    fTargetCenter = config.GetDouble("target", "center", -291.1) * cm;
+    fTargetR = config.GetDouble("target", "radius", 14.5) * cm;
+    fTargetHalfL = config.GetDouble("target", "half_length", 2.75) * cm;
+    fTargetMat = config.GetString("target", "material", "D2Gas");
+    fTargetDensityRatio = config.GetDouble("target", "density_ratio", 1.0);
 
-    fRecoilDetNSeg = 20;
+    // Recoil detector
+    fRecoilDetNSeg = config.GetInt("recoil_detector", "n_segments", 20);
     fRecoilDetCenter = fTargetCenter;
-    fRecoilDetR = 13.5 * cm;
-    fRecoilDetHalfL = 2.6 * cm;
-    fRecoilDetL1Thickness = 200 * um;
-    fRecoilDetL2Thickness = 300 * um;
+    fRecoilDetR = config.GetDouble("recoil_detector", "radius", 13.5) * cm;
+    fRecoilDetHalfL = config.GetDouble("recoil_detector", "half_length", 2.6) * cm;
+    fRecoilDetL1Thickness = config.GetDouble("recoil_detector", "l1_thickness_um", 200) * um;
+    fRecoilDetL2Thickness = config.GetDouble("recoil_detector", "l2_thickness_um", 300) * um;
 
+    // Derived positions (vacuum system)
     fDownChamberCenter = fTargetCenter + 74.0 * mm + 71.0 * cm / 2.0;
     fVacBoxCenter = fTargetCenter + 74.0 * mm + 71.0 * cm + 425.17 * cm / 2.0;
 
-    fGEMCenter[0] = 217.5 * cm;
-    fGEMCenter[1] = 257.5 * cm;
+    // GEM detectors
+    std::vector<double> gemDefaults = {217.5, 257.5};
+    std::vector<double> gemCenters = config.GetDoubleArray("gem", "center", gemDefaults);
+    for (int i = 0; i < 10 && i < (int)gemCenters.size(); i++)
+        fGEMCenter[i] = gemCenters[i] * cm;
 
-    fSciPlaneCenter = 262.5 * cm;
+    // Scintillator plane
+    fSciPlaneCenter = config.GetDouble("scintillator_plane", "center", 262.5) * cm;
 
-    fCrystalSurf = 295.0 * cm;
+    // HyCal
+    fCrystalSurf = config.GetDouble("hycal", "crystal_surface", 295.0) * cm;
 
-    fExtDensityRatio = 1.0;
+    fExtDensityRatio = config.GetDouble("ext_density_ratio", 1.0);
 
-    if (fConfig == "drad") {
-        fTargetSDOn = false;
-        fRecoilDetSDOn = true;
-        fGEMSDOn = true;
-        fSciPlaneSDOn = true;
-        fHyCalSDOn = true;
-        fVirtualSDOn = false;
-    } else {
-        fTargetSDOn = false;
-        fRecoilDetSDOn = false;
-        fGEMSDOn = true;
-        fSciPlaneSDOn = false;
-        fHyCalSDOn = true;
-        fVirtualSDOn = false;
-    }
+    // Sensitive detector flags
+    fTargetSDOn = config.GetBool("sensitive_detectors", "target", false);
+    fRecoilDetSDOn = config.GetBool("sensitive_detectors", "recoil", false);
+    fGEMSDOn = config.GetBool("sensitive_detectors", "gem", true);
+    fSciPlaneSDOn = config.GetBool("sensitive_detectors", "scintillator_plane", false);
+    fHyCalSDOn = config.GetBool("sensitive_detectors", "hycal", true);
+    fVirtualSDOn = config.GetBool("sensitive_detectors", "virtual", false);
 
-    fAttenuationLG = 0.0;
-    fReflectanceLG = 1.0;
+    // HyCal optical properties
+    fAttenuationLG = config.GetDouble("hycal", "attenuation_lg", 0.0);
+    fReflectanceLG = config.GetDouble("hycal", "reflectance_lg", 1.0);
 
     detectorMessenger = new DetectorMessenger(this);
 }
@@ -472,12 +475,10 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
 
     AddVaccumBox(logicWorld);
 
-    // Center of two GEM should be at -3000.0 + 89.0 + (5226.16 + 5186.45) / 2 + 4.6525 = 2299.9575 mm // (5226.16 + 5186.45) / 2 from Weizhi
-    fGEMCenter[0] = 229.99575 * cm;
+    // GEM center: PRad survey value is 229.99575 cm (now set via config/prad.json)
     AddGEM(logicWorld, 0, false);
 
-    // The crystal surface should be at -3000.0 + 89.0 + 5646.15 = 2735.15 mm // 5646.15 from Weizhi
-    fCrystalSurf = 273.515 * cm; // Surface of the PWO
+    // Crystal surface: PRad survey value is 273.515 cm (now set via config/prad.json)
     AddHyCal(logicWorld);
 
     // Virtual Detector
@@ -703,10 +704,8 @@ G4VPhysicalVolume *DetectorConstruction::DefineTestVolumes()
     G4Material *TargetWindowM = G4Material::GetMaterial("Kapton");
     G4Material *VirtualDetM = G4Material::GetMaterial("VirtualDetM");
 
-    // World
-    G4double WorldSizeXY = 10.0 * cm;
-    G4double WorldSizeZ = 100.0 * cm;
-    G4VSolid *solidWorld = new G4Box("WorldS", WorldSizeXY, WorldSizeXY, WorldSizeZ);
+    // World (size set via config/test.json, defaults to 10x100 cm)
+    G4VSolid *solidWorld = new G4Box("WorldS", fWorldSizeXY, fWorldSizeXY, fWorldSizeZ);
     G4LogicalVolume *logicWorld = new G4LogicalVolume(solidWorld, DefaultM, "WorldLV");
     G4VPhysicalVolume *physiWorld = new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicWorld, "World", 0, false, 0);
 

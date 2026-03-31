@@ -39,6 +39,7 @@
 
 #include "G4String.hh"
 
+class SimConfig;
 class G4VSteppingVerbose;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -46,7 +47,7 @@ class G4VSteppingVerbose;
 class ActionInitialization : public G4VUserActionInitialization
 {
 public:
-    ActionInitialization(G4String conf);
+    ActionInitialization(G4String conf, const SimConfig &config);
     virtual ~ActionInitialization();
 
     void Build() const;
@@ -55,6 +56,7 @@ public:
 
 private:
     G4String fConfig;
+    const SimConfig &fSimConfig;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
