@@ -41,6 +41,8 @@
 #include "G4String.hh"
 #include "G4Types.hh"
 
+#include <memory>
+
 class EventMessenger;
 
 class G4Event;
@@ -70,7 +72,7 @@ private:
 
     G4String fCollName;
 
-    EventMessenger *eventMessenger;
+    std::unique_ptr<EventMessenger> eventMessenger;
 };
 
 inline void EventAction::SetPrintModulo(G4int val)

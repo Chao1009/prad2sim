@@ -42,6 +42,7 @@
 #include "G4String.hh"
 
 #include <map>
+#include <memory>
 
 class SimConfig;
 class DetectorMessenger;
@@ -139,7 +140,7 @@ private:
     G4double fAttenuationLG;
     G4double fReflectanceLG;
 
-    DetectorMessenger *detectorMessenger; // pointer to the messenger
+    std::unique_ptr<DetectorMessenger> detectorMessenger;
 };
 
 inline void DetectorConstruction::SetTargetPos(G4double z)

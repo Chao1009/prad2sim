@@ -87,24 +87,24 @@ CalorimeterSD::CalorimeterSD(G4String name, G4String abbrev, G4String pwo_filena
     fTotalEdep = 0;
     fTotalTrackL = 0;
 
-    for (int i = 0; i < NModules; i++) {
+    for (int i = 0; i < kNModules; i++) {
         fModuleEdep[i] = 1e+38;
         fModuleTrackL[i] = 1e+38;
     }
 
-    fInterpolator = new ROOT::Math::Interpolator(InterpolPoints, InterpolType);
+    fInterpolator = std::make_unique<ROOT::Math::Interpolator>(kInterpolPoints, kInterpolType);
 
     std::ifstream attenuation_file;
     attenuation_file.open(pwo_filename.c_str());
-    G4double d[InterpolPoints], a[InterpolPoints];
+    G4double d[kInterpolPoints], a[kInterpolPoints];
 
-    for (int i = 0; i < InterpolPoints - 1; i++)
+    for (int i = 0; i < kInterpolPoints - 1; i++)
         attenuation_file >> d[i] >> a[i];
 
-    d[InterpolPoints - 1] = d[InterpolPoints - 2] + 1;
-    a[InterpolPoints - 1] = a[InterpolPoints - 2];
+    d[kInterpolPoints - 1] = d[kInterpolPoints - 2] + 1;
+    a[kInterpolPoints - 1] = a[kInterpolPoints - 2];
 
-    fInterpolator->SetData(InterpolPoints, d, a);
+    fInterpolator->SetData(kInterpolPoints, d, a);
     attenuation_file.close();
 }
 
@@ -132,7 +132,7 @@ void CalorimeterSD::Initialize(G4HCofThisEvent *HCE)
     HCID = G4SDManager::GetSDMpointer()->GetCollectionID(fCalorHitsCollection);
     HCE->AddHitsCollection(HCID, fCalorHitsCollection);
 
-    for (G4int i = 0; i < NModules; i++)
+    for (G4int i = 0; i < kNModules; i++)
         fCalorHitsCollection->insert(new CalorimeterHit());
 
     Clear();
@@ -145,7 +145,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
     if (!fHitsCollection || !fCalorHitsCollection) return false;
 
     G4Track *theTrack = aStep->GetTrack();
-    TrackInformation *theTrackInfo = (TrackInformation *)(theTrack->GetUserInformation());
+    TrackInformation *theTrackInfo = static_cast<TrackInformation *>(theTrack->GetUserInformation());
 
     G4double Edep = aStep->GetTotalEnergyDeposit();
 
@@ -232,7 +232,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
     if (AncestorID < 0) AncestorID = TrackID;
 
-    StandardHit *aHit = NULL;
+    StandardHit *aHit = nullptr;
 
     for (G4int i = fHitsCollection->entries() - 1; i >= 0; i--) {
         if ((*fHitsCollection)[i]->GetTrackID() == AncestorID) {
@@ -282,7 +282,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
     if (nSecondaries > 0 && AncestorID >= 0) {
         for (auto &aSecondary : * (aStep->GetSecondaryInCurrentStep())) {
-            if (aSecondary->GetUserInformation() == 0) {
+            if (aSecondary->GetUserInformation() == nullptr) {
                 TrackInformation *newTrackInfo = new TrackInformation(theTrackInfo);
                 newTrackInfo->SetAncestor(fID, AncestorID);
                 G4Track *theSecondary = (G4Track *)aSecondary;
@@ -306,9 +306,9 @@ void CalorimeterSD::EndOfEvent(G4HCofThisEvent *HCE)
 
     fN = NHits;
 
-    if (fN > MaxNHits) {
-        G4cout << "WARNING: " << fN << " hits in " << fHitsCollection->GetName() << " exceed " << MaxNHits << G4endl;
-        fN = MaxNHits;
+    if (fN > kMaxNHits) {
+        G4cout << "WARNING: " << fN << " hits in " << fHitsCollection->GetName() << " exceed " << kMaxNHits << G4endl;
+        fN = kMaxNHits;
     }
 
     for (int i = 0; i < fN; i++) {
@@ -330,7 +330,7 @@ void CalorimeterSD::EndOfEvent(G4HCofThisEvent *HCE)
     fTotalEdep = 0;
     fTotalTrackL = 0;
 
-    for (int i = 0; i < NModules; i++) {
+    for (int i = 0; i < kNModules; i++) {
         CalorimeterHit *aCalorHit = (*fCalorHitsCollection)[i];
 
         fModuleEdep[i] = aCalorHit->GetEdep();
@@ -350,8 +350,8 @@ void CalorimeterSD::Register(TTree *tree)
 
     tree->Branch(Form("%s.TotalEdep", abbr), &fTotalEdep, Form("%s.TotalEdep/D", abbr));
     tree->Branch(Form("%s.TotalTrackL", abbr), &fTotalTrackL, Form("%s.TotalTrackL/D", abbr));
-    tree->Branch(Form("%s.ModuleEdep", abbr), fModuleEdep, Form("%s.ModuleEdep[%d]/D", abbr, NModules));
-    tree->Branch(Form("%s.ModuleTrackL", abbr), fModuleTrackL, Form("%s.ModuleTrackL[%d]/D", abbr, NModules));
+    tree->Branch(Form("%s.ModuleEdep", abbr), fModuleEdep, Form("%s.ModuleEdep[%d]/D", abbr, kNModules));
+    tree->Branch(Form("%s.ModuleTrackL", abbr), fModuleTrackL, Form("%s.ModuleTrackL[%d]/D", abbr, kNModules));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -363,7 +363,7 @@ void CalorimeterSD::Clear()
     fTotalEdep = 0;
     fTotalTrackL = 0;
 
-    for (int i = 0; i < NModules; i++) {
+    for (int i = 0; i < kNModules; i++) {
         fModuleEdep[i] = 1e+38;
         fModuleTrackL[i] = 1e+38;
     }

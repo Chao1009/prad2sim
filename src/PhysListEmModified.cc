@@ -125,7 +125,7 @@ G4_DECLARE_PHYSCONSTR_FACTORY(PhysListEmModified);
 
 PhysListEmModified::PhysListEmModified(G4int ver, const G4String &) : G4VPhysicsConstructor("EmModified"), verbose(ver)
 {
-    physlistMessenger = new PhysicsListMessenger(this);
+    physlistMessenger = std::make_unique<PhysicsListMessenger>(this);
 
     G4EmParameters *param = G4EmParameters::Instance();
     param->SetDefaults();

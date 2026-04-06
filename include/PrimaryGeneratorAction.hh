@@ -42,6 +42,8 @@
 #include "G4String.hh"
 #include "G4ThreeVector.hh"
 
+#include <memory>
+
 class SimConfig;
 class G4VPrimaryGenerator;
 
@@ -91,9 +93,9 @@ private:
     G4String fTargetProfile;
     G4String fPileUpProfile;
 
-    G4VPrimaryGenerator *fPrimaryGenerator;
+    std::unique_ptr<G4VPrimaryGenerator> fPrimaryGenerator;
 
-    PrimaryGeneratorMessenger *gunMessenger; // pointer to the messenger
+    std::unique_ptr<PrimaryGeneratorMessenger> gunMessenger;
 };
 
 inline void PrimaryGeneratorAction::SetGunType(G4String val)

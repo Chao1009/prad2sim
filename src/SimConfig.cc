@@ -1,40 +1,36 @@
 //
-// SimConfig.cc
-// JSON-based configuration loader for PRadSim.
+// ********************************************************************
+// * SimConfig.cc                                                      *
+// * JSON-based configuration loader for PRadSim.                      *
+// ********************************************************************
 //
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "SimConfig.hh"
 
 #include <fstream>
 #include <iostream>
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 SimConfig::SimConfig() : fLoaded(false)
 {
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 bool SimConfig::Load(const std::string &path)
 {
-    std::ifstream ifs(path);
+    nlohmann::json config = ReadJsonFile(path);
 
-    if (!ifs.is_open()) {
-        std::cerr << "SimConfig: cannot open " << path << std::endl;
+    if (config.is_null()) {
         fLoaded = false;
         return false;
     }
 
     fPath = path;
-
-    nlohmann::json config;
-
-    try {
-        ifs >> config;
-    } catch (const nlohmann::json::parse_error &e) {
-        std::cerr << "SimConfig: JSON parse error in " << path << ": " << e.what() << std::endl;
-        fLoaded = false;
-        return false;
-    }
-
-    ifs.close();
 
     // If the config references a base file, load and merge it
     if (config.contains("_base") && config["_base"].is_string()) {
@@ -44,23 +40,12 @@ bool SimConfig::Load(const std::string &path)
         if (!dir.empty())
             baseFile = dir + "/" + baseFile;
 
-        std::ifstream bfs(baseFile);
+        nlohmann::json base = ReadJsonFile(baseFile);
 
-        if (bfs.is_open()) {
-            nlohmann::json base;
-
-            try {
-                bfs >> base;
-            } catch (const nlohmann::json::parse_error &e) {
-                std::cerr << "SimConfig: JSON parse error in base file " << baseFile << ": " << e.what() << std::endl;
-            }
-
-            bfs.close();
+        if (!base.is_null())
             fData = Merge(base, config);
-        } else {
-            std::cerr << "SimConfig: cannot open base file " << baseFile << std::endl;
+        else
             fData = config;
-        }
     } else {
         fData = config;
     }
@@ -70,102 +55,82 @@ bool SimConfig::Load(const std::string &path)
     return true;
 }
 
-double SimConfig::GetDouble(const std::string &key, double defaultVal) const
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+const nlohmann::json *SimConfig::FindNode(const std::string &key) const
 {
-    if (!fLoaded) return defaultVal;
+    if (!fLoaded || !fData.contains(key))
+        return nullptr;
+
+    return &fData[key];
+}
+
+const nlohmann::json *SimConfig::FindNode(const std::string &section, const std::string &key) const
+{
+    if (!fLoaded || !fData.contains(section) || !fData[section].contains(key))
+        return nullptr;
+
+    return &fData[section][key];
+}
+
+template<typename T>
+T SimConfig::Extract(const nlohmann::json *node, const T &defaultVal) const
+{
+    if (!node) return defaultVal;
 
     try {
-        if (fData.contains(key))
-            return fData[key].get<double>();
+        return node->get<T>();
     } catch (...) {
+        return defaultVal;
     }
+}
 
-    return defaultVal;
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+double SimConfig::GetDouble(const std::string &key, double defaultVal) const
+{
+    return Extract(FindNode(key), defaultVal);
 }
 
 std::string SimConfig::GetString(const std::string &key, const std::string &defaultVal) const
 {
-    if (!fLoaded) return defaultVal;
-
-    try {
-        if (fData.contains(key))
-            return fData[key].get<std::string>();
-    } catch (...) {
-    }
-
-    return defaultVal;
+    return Extract(FindNode(key), defaultVal);
 }
 
 double SimConfig::GetDouble(const std::string &section, const std::string &key, double defaultVal) const
 {
-    if (!fLoaded) return defaultVal;
-
-    try {
-        if (fData.contains(section) && fData[section].contains(key))
-            return fData[section][key].get<double>();
-    } catch (...) {
-    }
-
-    return defaultVal;
+    return Extract(FindNode(section, key), defaultVal);
 }
 
 int SimConfig::GetInt(const std::string &section, const std::string &key, int defaultVal) const
 {
-    if (!fLoaded) return defaultVal;
-
-    try {
-        if (fData.contains(section) && fData[section].contains(key))
-            return fData[section][key].get<int>();
-    } catch (...) {
-    }
-
-    return defaultVal;
+    return Extract(FindNode(section, key), defaultVal);
 }
 
 bool SimConfig::GetBool(const std::string &section, const std::string &key, bool defaultVal) const
 {
-    if (!fLoaded) return defaultVal;
-
-    try {
-        if (fData.contains(section) && fData[section].contains(key))
-            return fData[section][key].get<bool>();
-    } catch (...) {
-    }
-
-    return defaultVal;
+    return Extract(FindNode(section, key), defaultVal);
 }
 
 std::string SimConfig::GetString(const std::string &section, const std::string &key, const std::string &defaultVal) const
 {
-    if (!fLoaded) return defaultVal;
-
-    try {
-        if (fData.contains(section) && fData[section].contains(key))
-            return fData[section][key].get<std::string>();
-    } catch (...) {
-    }
-
-    return defaultVal;
+    return Extract(FindNode(section, key), defaultVal);
 }
 
 std::vector<double> SimConfig::GetDoubleArray(const std::string &section, const std::string &key, const std::vector<double> &defaultVal) const
 {
-    if (!fLoaded) return defaultVal;
+    const nlohmann::json *node = FindNode(section, key);
+
+    if (!node || !node->is_array()) return defaultVal;
 
     try {
-        if (fData.contains(section) && fData[section].contains(key) && fData[section][key].is_array()) {
-            std::vector<double> result;
-
-            for (const auto &v : fData[section][key])
-                result.push_back(v.get<double>());
-
-            return result;
-        }
+        return node->get<std::vector<double>>();
     } catch (...) {
+        return defaultVal;
     }
-
-    return defaultVal;
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void SimConfig::Print() const
 {
@@ -176,6 +141,27 @@ void SimConfig::Print() const
 
     std::cout << "SimConfig [" << fPath << "]:" << std::endl;
     std::cout << fData.dump(2) << std::endl;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+nlohmann::json SimConfig::ReadJsonFile(const std::string &path)
+{
+    std::ifstream ifs(path);
+
+    if (!ifs.is_open()) {
+        std::cerr << "SimConfig: cannot open " << path << std::endl;
+        return nullptr;
+    }
+
+    try {
+        nlohmann::json data;
+        ifs >> data;
+        return data;
+    } catch (const nlohmann::json::parse_error &e) {
+        std::cerr << "SimConfig: JSON parse error in " << path << ": " << e.what() << std::endl;
+        return nullptr;
+    }
 }
 
 nlohmann::json SimConfig::Merge(const nlohmann::json &base, const nlohmann::json &over)
@@ -204,3 +190,5 @@ std::string SimConfig::DirName(const std::string &path)
 
     return "";
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

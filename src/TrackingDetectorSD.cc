@@ -76,7 +76,7 @@ G4bool TrackingDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
     if (!fHitsCollection) return false;
 
     G4Track *theTrack = aStep->GetTrack();
-    TrackInformation *theTrackInfo = (TrackInformation *)(theTrack->GetUserInformation());
+    TrackInformation *theTrackInfo = static_cast<TrackInformation *>(theTrack->GetUserInformation());
 
     G4double Edep = aStep->GetTotalEnergyDeposit();
 
@@ -114,7 +114,7 @@ G4bool TrackingDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
         if (AncestorID < 0) AncestorID = TrackID;
 
-        StandardHit *aHit = NULL;
+        StandardHit *aHit = nullptr;
 
         for (G4int i = fHitsCollection->entries() - 1; i >= 0; i--) {
             if ((*fHitsCollection)[i]->GetDetectorID() == DetectorID && (*fHitsCollection)[i]->GetTrackID() == AncestorID) {
@@ -161,7 +161,7 @@ G4bool TrackingDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
     if (nSecondaries > 0 && AncestorID >= 0) {
         for (auto &aSecondary : * (aStep->GetSecondaryInCurrentStep())) {
-            if (aSecondary->GetUserInformation() == 0) {
+            if (aSecondary->GetUserInformation() == nullptr) {
                 TrackInformation *newTrackInfo = new TrackInformation(theTrackInfo);
                 newTrackInfo->SetAncestor(fID, AncestorID);
                 G4Track *theSecondary = (G4Track *)aSecondary;

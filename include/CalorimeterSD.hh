@@ -40,12 +40,11 @@
 #include "CalorimeterHit.hh"
 
 #include "Math/Interpolator.h"
+#include "Math/InterpolationTypes.h"
 #include "G4String.hh"
 
-#define InterpolPoints 181
-#define InterpolType ROOT::Math::Interpolation::kCSPLINE
+#include <memory>
 
-#define NModules 1728
 
 class G4HCofThisEvent;
 class G4Step;
@@ -57,6 +56,11 @@ class TTree;
 class CalorimeterSD: public StandardDetectorSD
 {
 public:
+    static constexpr int kInterpolPoints = 181;
+    static const ROOT::Math::Interpolation::Type kInterpolType = ROOT::Math::Interpolation::kCSPLINE;
+    static constexpr int kNModules = 1728;
+
+
     CalorimeterSD(G4String name, G4String abbrev, G4String pwo_filename);
     virtual ~CalorimeterSD();
 
@@ -78,10 +82,10 @@ protected:
 
     double fTotalEdep;
     double fTotalTrackL;
-    double fModuleEdep[NModules];
-    double fModuleTrackL[NModules];
+    double fModuleEdep[kNModules];
+    double fModuleTrackL[kNModules];
 
-    ROOT::Math::Interpolator *fInterpolator;
+    std::unique_ptr<ROOT::Math::Interpolator> fInterpolator;
 };
 
 inline void CalorimeterSD::SetAttenuationLG(G4double val)

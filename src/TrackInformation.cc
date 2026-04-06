@@ -49,7 +49,7 @@ G4Allocator<TrackInformation> TrackInformationAllocator;
 TrackInformation::TrackInformation() : G4VUserTrackInformation()
 {
     fOriTrackID = 0;
-    fOriParticle = NULL;
+    fOriParticle = nullptr;
     fOriPosition = G4ThreeVector(0, 0, 0);
     fOriMomentum = G4ThreeVector(0, 0, 0);
     fOriEnergy = 0;

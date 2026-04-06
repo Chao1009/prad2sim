@@ -69,7 +69,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RootTree *gRootTree = 0;
+RootTree *gRootTree = nullptr;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -90,7 +90,6 @@ int main(int argc, char **argv)
     std::string physics_list = "FTFP_BERT";
     std::string seed = "random";
     std::string macro;
-    macro.clear();
 
     while (1) {
         static struct option long_options[] = {
@@ -177,10 +176,7 @@ int main(int argc, char **argv)
     data_file_o.close();
 
     std::string path = "output/" + file_name + "_" + std::to_string(run_number) + ".root";
-    char outf[256];
-    strcpy(outf, path.c_str());
-
-    gRootTree = new RootTree(outf);
+    gRootTree = new RootTree(path.c_str());
 
     // Construct the default run manager
     G4VSteppingVerbose::SetInstance(new SteppingVerbose);
@@ -211,7 +207,7 @@ int main(int argc, char **argv)
         }
     }
 
-    G4VModularPhysicsList *physicsList = NULL;
+    G4VModularPhysicsList *physicsList = nullptr;
 
     if (pure_em)
         physicsList = new PhysListPureEm(physics_list, extra_em, 1);
@@ -248,7 +244,7 @@ int main(int argc, char **argv)
     DetectorConstruction *detector = new DetectorConstruction(conf, simConfig);
     runManager->SetUserInitialization(detector);
 
-    ActionInitialization *action = new ActionInitialization(conf, simConfig);
+    ActionInitialization *action = new ActionInitialization(conf, &simConfig);
     runManager->SetUserInitialization(action);
 
     // Get the pointer to the User Interface manager

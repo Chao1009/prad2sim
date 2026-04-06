@@ -65,14 +65,13 @@ EventAction::EventAction(G4String conf) : G4UserEventAction(), fEventID(0), fPri
 
     Register(gRootTree->GetTree());
 
-    eventMessenger = new EventMessenger(this);
+    eventMessenger = std::make_unique<EventMessenger>(this);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 EventAction::~EventAction()
 {
-    delete eventMessenger;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -98,7 +97,7 @@ void EventAction::EndOfEventAction(const G4Event *evt)
             G4String ColName = HCE->GetHC(i)->GetName();
 
             if (ColName == fCollName)  { // Hard-coded detector name in DetectorConstruction.cc
-                StandardHitsCollection *HyCalColl = (StandardHitsCollection *) HCE->GetHC(i);
+                StandardHitsCollection *HyCalColl = static_cast<StandardHitsCollection *>(HCE->GetHC(i));
                 G4int nHits = HyCalColl->entries();
 
                 if (nHits > 0)
@@ -108,7 +107,7 @@ void EventAction::EndOfEventAction(const G4Event *evt)
     } else
         gRootTree->FillTree();
 
-    TrackingAction *theTrackingAction = (TrackingAction *)G4RunManager::GetRunManager()->GetUserTrackingAction();
+    TrackingAction *theTrackingAction = static_cast<TrackingAction *>(const_cast<G4UserTrackingAction *>(G4RunManager::GetRunManager()->GetUserTrackingAction()));
     theTrackingAction->Clear();
 }
 

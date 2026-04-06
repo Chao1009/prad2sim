@@ -39,7 +39,7 @@
 
 #include "globals.hh"
 
-#define MaxTracks 3000
+#include <memory>
 
 class TrackingMessenger;
 
@@ -50,6 +50,9 @@ class TTree;
 class TrackingAction : public G4UserTrackingAction
 {
 public:
+    static constexpr int kMaxTracks = 3000;
+
+
     TrackingAction();
     virtual ~TrackingAction();
 
@@ -69,15 +72,15 @@ private:
     G4bool fRegistered;
 
     int fN;
-    int fPID[MaxTracks]; // Particle ID
-    int fTID[MaxTracks]; // Track ID
-    int fPTID[MaxTracks]; // Parent Track ID
-    double fX[MaxTracks];
-    double fY[MaxTracks];
-    double fZ[MaxTracks];
-    int fProcessID[MaxTracks];
+    int fPID[kMaxTracks]; // Particle ID
+    int fTID[kMaxTracks]; // Track ID
+    int fPTID[kMaxTracks]; // Parent Track ID
+    double fX[kMaxTracks];
+    double fY[kMaxTracks];
+    double fZ[kMaxTracks];
+    int fProcessID[kMaxTracks];
 
-    TrackingMessenger *trackingMessenger;
+    std::unique_ptr<TrackingMessenger> trackingMessenger;
 };
 
 inline void TrackingAction::SetNoSecondary(G4bool val)

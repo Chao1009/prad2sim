@@ -37,6 +37,10 @@
 #include "PrimaryGeneratorAction.hh"
 
 #include "PrimaryGenerator.hh"
+#include "PRadPrimaryGenerator.hh"
+#include "DRadPrimaryGenerator.hh"
+#include "DeuteronDisintegration.hh"
+#include "CosmicsGenerator.hh"
 #include "PrimaryGeneratorMessenger.hh"
 #include "SimConfig.hh"
 
@@ -48,7 +52,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf, const SimConfig &config) : G4VUserPrimaryGeneratorAction(), fConfig(conf), fPrimaryGenerator(NULL)
+PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf, const SimConfig &config) : G4VUserPrimaryGeneratorAction(), fConfig(conf), fPrimaryGenerator(nullptr)
 {
     if (fConfig != "prad" && fConfig != "drad")
         fConfig = "prad";
@@ -58,42 +62,34 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf, const SimConfig &c
     fEventType = config.GetString("generator", "event_type", "elastic");
     fE = config.GetDouble("generator", "beam_energy", 1100.0) * MeV;
 
-    std::vector<double> vtxDefault = {0.0, 0.0, -300.0};
-    std::vector<double> vtx = config.GetDoubleArray("generator", "vertex", vtxDefault);
-    fX = (vtx.size() > 0 ? vtx[0] : 0.0) * cm;
-    fY = (vtx.size() > 1 ? vtx[1] : 0.0) * cm;
-    fZ = (vtx.size() > 2 ? vtx[2] : -300.0) * cm;
+    std::vector<double> vtx = config.GetDoubleArray("generator", "vertex", {0.0, 0.0, -300.0});
+    fX = vtx[0] * cm;
+    fY = vtx[1] * cm;
+    fZ = vtx[2] * cm;
 
     fTheta = 0;
     fPhi = 0;
 
-    std::vector<double> thetaDefault = {0.5, 6.5};
-    std::vector<double> thetaRange = config.GetDoubleArray("generator", "theta_range", thetaDefault);
-    fThetaLo = (thetaRange.size() > 0 ? thetaRange[0] : 0.5) * deg;
-    fThetaHi = (thetaRange.size() > 1 ? thetaRange[1] : 6.5) * deg;
+    std::vector<double> thetaRange = config.GetDoubleArray("generator", "theta_range", {0.5, 6.5});
+    fThetaLo = thetaRange[0] * deg;
+    fThetaHi = thetaRange[1] * deg;
 
-    std::vector<double> enpDefault = {1e-4, 1.0};
-    std::vector<double> enpRange = config.GetDoubleArray("generator", "energy_range", enpDefault);
-    fEnpLo = enpRange.size() > 0 ? enpRange[0] : 1e-4;
-    fEnpHi = enpRange.size() > 1 ? enpRange[1] : 1.0;
+    std::vector<double> enpRange = config.GetDoubleArray("generator", "energy_range", {1e-4, 1.0});
+    fEnpLo = enpRange[0];
+    fEnpHi = enpRange[1];
 
     fRecoilParticle.clear();
     fEventFile.clear();
     fTargetProfile.clear();
     fPileUpProfile.clear();
 
-    // create a messenger for this class
-    gunMessenger = new PrimaryGeneratorMessenger(this);
+    gunMessenger = std::make_unique<PrimaryGeneratorMessenger>(this);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
-    if (fPrimaryGenerator)
-        delete fPrimaryGenerator;
-
-    delete gunMessenger;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -107,27 +103,27 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
 
         if (fConfig == "prad") {
             if (fGunType == "point")
-                fPrimaryGenerator = new PrimaryGenerator("point", fE, fX, fY, fZ, fTheta, fPhi, false, "proton");
+                fPrimaryGenerator = std::make_unique<PrimaryGenerator>("point", fE, fX, fY, fZ, fTheta, fPhi, false, "proton");
             else if (fGunType == "ring")
-                fPrimaryGenerator = new PrimaryGenerator(fEventType, fE, fThetaLo, fThetaHi, false, "proton");
+                fPrimaryGenerator = std::make_unique<PrimaryGenerator>(fEventType, fE, fThetaLo, fThetaHi, false, "proton");
             else if (fGunType == "cosmics")
-                fPrimaryGenerator = new CosmicsGenerator();
+                fPrimaryGenerator = std::make_unique<CosmicsGenerator>();
             else
-                fPrimaryGenerator = new PRadPrimaryGenerator(fEventType, false, "proton", fEventFile, fPileUpProfile, fTargetProfile);
+                fPrimaryGenerator = std::make_unique<PRadPrimaryGenerator>(fEventType, false, "proton", fEventFile, fPileUpProfile, fTargetProfile);
         } else {
             if (!recoilon) fRecoilParticle = "deuteron";
 
             if (fGunType == "point")
-                fPrimaryGenerator = new PrimaryGenerator("point", fE, fX, fY, fZ, fTheta, fPhi, false, "proton");
+                fPrimaryGenerator = std::make_unique<PrimaryGenerator>("point", fE, fX, fY, fZ, fTheta, fPhi, false, "proton");
             else if (fGunType == "ring") {
                 if (fEventType == "disintegration")
-                    fPrimaryGenerator = new DeuteronDisintegration(fE, fEnpLo, fEnpHi, fThetaLo, fThetaHi);
+                    fPrimaryGenerator = std::make_unique<DeuteronDisintegration>(fE, fEnpLo, fEnpHi, fThetaLo, fThetaHi);
                 else
-                    fPrimaryGenerator = new PrimaryGenerator(fEventType, fE, fThetaLo, fThetaHi, recoilon, fRecoilParticle);
+                    fPrimaryGenerator = std::make_unique<PrimaryGenerator>(fEventType, fE, fThetaLo, fThetaHi, recoilon, fRecoilParticle);
             } else if (fGunType == "cosmics")
-                fPrimaryGenerator = new CosmicsGenerator();
+                fPrimaryGenerator = std::make_unique<CosmicsGenerator>();
             else
-                fPrimaryGenerator = new DRadPrimaryGenerator(fEventType, recoilon, fRecoilParticle, fEventFile);
+                fPrimaryGenerator = std::make_unique<DRadPrimaryGenerator>(fEventType, recoilon, fRecoilParticle, fEventFile);
         }
     }
 

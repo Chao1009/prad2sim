@@ -23,70 +23,79 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// StandardDetectorSD.hh
+// CosmicsGenerator.hh
 // Developer : Chao Gu
 // History:
-//   Jan 2017, C. Gu, Add for ROOT support.
-//   Mar 2017, C. Gu, Rewrite sensitive detectors.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef StandardDetectorSD_h
-#define StandardDetectorSD_h 1
+#ifndef CosmicsGenerator_h
+#define CosmicsGenerator_h 1
 
-#include "G4VSensitiveDetector.hh"
+#include "TFoamIntegrand.h"
 
-#include "StandardHit.hh"
+#include "G4VPrimaryGenerator.hh"
 
-#include "G4String.hh"
+#include <memory>
 
-class G4HCofThisEvent;
-class G4Step;
-class G4TouchableHistory;
+class G4Event;
+
 class TTree;
+class TFoam;
+class TRandom2;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class StandardDetectorSD : public G4VSensitiveDetector
+class CosmicsGenerator;
+
+class CosmicsIntegrand : public TFoamIntegrand
 {
 public:
-    static constexpr int kMaxNHits = 300;
+    CosmicsIntegrand(CosmicsGenerator *gen, double e0, double eps, double rd, double nn);
+
+    double Density(int nDim, double *arg);
+
+    double E0, epsilon, Rd, n;
+
+    double fEMin, fEMax;
+    double fZenithMin, fZenithMax;
+};
+
+class CosmicsGenerator : public G4VPrimaryGenerator
+{
+    friend class CosmicsIntegrand;
+
+public:
+    static constexpr int kMaxN = 30;
 
 
-    StandardDetectorSD(G4String name, G4String abbrev);
-    virtual ~StandardDetectorSD();
+    CosmicsGenerator();
+    virtual ~CosmicsGenerator();
 
-    virtual void Initialize(G4HCofThisEvent *);
-    virtual G4bool ProcessHits(G4Step *, G4TouchableHistory *);
-    virtual void EndOfEvent(G4HCofThisEvent *);
+    virtual void GeneratePrimaryVertex(G4Event *);
 
 protected:
-    virtual void Register(TTree *);
-    virtual void Clear();
+    void Register(TTree *);
 
-    G4int fID;
-    G4String fAbbrev;
-
-    StandardHitsCollection *fHitsCollection;
+    void Print() const;
+    void Clear();
 
     bool fRegistered;
 
     int fN;
-    int fPID[kMaxNHits]; // Particle ID
-    int fTID[kMaxNHits]; // Track ID
-    int fPTID[kMaxNHits]; // Parent Track ID
-    int fDID[kMaxNHits];
-    double fX[kMaxNHits];
-    double fY[kMaxNHits];
-    double fZ[kMaxNHits];
-    double fMomentum[kMaxNHits];
-    double fTheta[kMaxNHits];
-    double fPhi[kMaxNHits];
-    double fTime[kMaxNHits];
-    double fEdep[kMaxNHits];
-    double fTrackL[kMaxNHits];
+    int fPID[kMaxN];
+    double fX[kMaxN], fY[kMaxN], fZ[kMaxN];
+    double fE[kMaxN], fMomentum[kMaxN];
+    double fTheta[kMaxN], fPhi[kMaxN];
+
+    double fEMin, fEMax;
+    double fZenithMin, fZenithMax;
+
+    std::unique_ptr<CosmicsIntegrand> fFoamI;
+    std::unique_ptr<TRandom2> fPseRan;
+    std::unique_ptr<TFoam> fETGenerator;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

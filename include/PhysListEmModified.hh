@@ -40,6 +40,8 @@
 
 #include "G4String.hh"
 
+#include <memory>
+
 class PhysicsListMessenger;
 
 class G4VEmModel;
@@ -64,7 +66,7 @@ private:
 
     G4int verbose;
 
-    PhysicsListMessenger *physlistMessenger;
+    std::unique_ptr<PhysicsListMessenger> physlistMessenger;
 };
 
 inline void PhysListEmModified::SetBremsstrahlungAngularGenerator(G4String val)

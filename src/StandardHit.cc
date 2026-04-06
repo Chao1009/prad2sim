@@ -78,7 +78,7 @@ void StandardHit::Print()
     G4cout << std::setw(5) << G4BestUnit(fInMom.mag(), "Energy") << " " << std::setw(8) << G4BestUnit(fOutMom.mag(), "Energy") << " " << std::setw(8) << G4BestUnit(fEdep, "Energy") << " ";
     G4cout << std::setw(5) << G4BestUnit(fTime, "Time") << " ";
 
-    if (fPhysV != 0) G4cout << std::setw(18) << fPhysV->GetName() << " " << fCopyNo;
+    if (fPhysV != nullptr) G4cout << std::setw(18) << fPhysV->GetName() << " " << fCopyNo;
 
     G4cout << G4endl;
     G4cout.precision(prec);
@@ -99,7 +99,7 @@ void StandardHit::Clear()
     fTime = 0;
     fEdep = 0;
     fTrackLen = 0;
-    fPhysV = NULL;
+    fPhysV = nullptr;
     fCopyNo = 0;
 }
 

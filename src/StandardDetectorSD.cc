@@ -58,7 +58,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-StandardDetectorSD::StandardDetectorSD(G4String name, G4String abbrev) : G4VSensitiveDetector(name), fAbbrev(abbrev), fHitsCollection(NULL), fRegistered(false)
+StandardDetectorSD::StandardDetectorSD(G4String name, G4String abbrev) : G4VSensitiveDetector(name), fAbbrev(abbrev), fHitsCollection(nullptr), fRegistered(false)
 {
     fID = name.hash() % 100000;
     //G4cout << name << "\t" << fAbbrev << "\t" << fID << G4endl;
@@ -69,7 +69,7 @@ StandardDetectorSD::StandardDetectorSD(G4String name, G4String abbrev) : G4VSens
 
     fN = 0;
 
-    for (int i = 0; i < MaxNHits; i++) {
+    for (int i = 0; i < kMaxNHits; i++) {
         fPID[i] = -9999;
         fTID[i] = -9999;
         fPTID[i] = -9999;
@@ -117,7 +117,7 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
     if (!fHitsCollection) return false;
 
     G4Track *theTrack = aStep->GetTrack();
-    TrackInformation *theTrackInfo = (TrackInformation *)(theTrack->GetUserInformation());
+    TrackInformation *theTrackInfo = static_cast<TrackInformation *>(theTrack->GetUserInformation());
 
     G4double Edep = aStep->GetTotalEnergyDeposit();
 
@@ -149,7 +149,7 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
     if (AncestorID < 0) AncestorID = TrackID;
 
-    StandardHit *aHit = NULL;
+    StandardHit *aHit = nullptr;
 
     for (G4int i = fHitsCollection->entries() - 1; i >= 0; i--) {
         if ((*fHitsCollection)[i]->GetTrackID() == AncestorID) {
@@ -194,7 +194,7 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
     if (nSecondaries > 0 && AncestorID >= 0) {
         for (auto &aSecondary : * (aStep->GetSecondaryInCurrentStep())) {
-            if (aSecondary->GetUserInformation() == 0) {
+            if (aSecondary->GetUserInformation() == nullptr) {
                 TrackInformation *newTrackInfo = new TrackInformation(theTrackInfo);
                 newTrackInfo->SetAncestor(fID, AncestorID);
                 G4Track *theSecondary = (G4Track *)aSecondary;
@@ -218,9 +218,9 @@ void StandardDetectorSD::EndOfEvent(G4HCofThisEvent *HCE)
 
     fN = NHits;
 
-    if (fN > MaxNHits) {
-        G4cout << "WARNING: " << fN << " hits in " << fHitsCollection->GetName() << " exceed " << MaxNHits << G4endl;
-        fN = MaxNHits;
+    if (fN > kMaxNHits) {
+        G4cout << "WARNING: " << fN << " hits in " << fHitsCollection->GetName() << " exceed " << kMaxNHits << G4endl;
+        fN = kMaxNHits;
     }
 
     for (int i = 0; i < fN; i++) {

@@ -23,70 +23,35 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// StandardDetectorSD.hh
+// DeuteronDisintegration.hh
 // Developer : Chao Gu
 // History:
-//   Jan 2017, C. Gu, Add for ROOT support.
-//   Mar 2017, C. Gu, Rewrite sensitive detectors.
+//   May 2017, C. Gu, Add Deuteron disintegration.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef StandardDetectorSD_h
-#define StandardDetectorSD_h 1
+#ifndef DeuteronDisintegration_h
+#define DeuteronDisintegration_h 1
 
-#include "G4VSensitiveDetector.hh"
-
-#include "StandardHit.hh"
-
-#include "G4String.hh"
-
-class G4HCofThisEvent;
-class G4Step;
-class G4TouchableHistory;
-class TTree;
+#include "PrimaryGenerator.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class StandardDetectorSD : public G4VSensitiveDetector
+class DeuteronDisintegration : public PrimaryGenerator
 {
 public:
-    static constexpr int kMaxNHits = 300;
+    DeuteronDisintegration(G4double e, G4double enplo, G4double enphi, G4double thlo, G4double thhi);
+    virtual ~DeuteronDisintegration();
 
+    virtual void GeneratePrimaryVertex(G4Event *);
 
-    StandardDetectorSD(G4String name, G4String abbrev);
-    virtual ~StandardDetectorSD();
+private:
+    G4double fEBeam;
 
-    virtual void Initialize(G4HCofThisEvent *);
-    virtual G4bool ProcessHits(G4Step *, G4TouchableHistory *);
-    virtual void EndOfEvent(G4HCofThisEvent *);
-
-protected:
-    virtual void Register(TTree *);
-    virtual void Clear();
-
-    G4int fID;
-    G4String fAbbrev;
-
-    StandardHitsCollection *fHitsCollection;
-
-    bool fRegistered;
-
-    int fN;
-    int fPID[kMaxNHits]; // Particle ID
-    int fTID[kMaxNHits]; // Track ID
-    int fPTID[kMaxNHits]; // Parent Track ID
-    int fDID[kMaxNHits];
-    double fX[kMaxNHits];
-    double fY[kMaxNHits];
-    double fZ[kMaxNHits];
-    double fMomentum[kMaxNHits];
-    double fTheta[kMaxNHits];
-    double fPhi[kMaxNHits];
-    double fTime[kMaxNHits];
-    double fEdep[kMaxNHits];
-    double fTrackL[kMaxNHits];
+    G4double fEnpLo, fEnpHi;
+    G4double fReactThetaLo, fReactThetaHi;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

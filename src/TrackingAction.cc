@@ -54,11 +54,11 @@
 
 TrackingAction::TrackingAction() : G4UserTrackingAction(), fNoSecondary(false), fSaveTrackInfo(false), fRegistered(false)
 {
-    trackingMessenger = new TrackingMessenger(this);
+    trackingMessenger = std::make_unique<TrackingMessenger>(this);
 
     fN = 0;
 
-    for (int i = 0; i < MaxTracks; i++) {
+    for (int i = 0; i < kMaxTracks; i++) {
         fPID[i] = -9999;
         fTID[i] = -9999;
         fPTID[i] = -9999;
@@ -85,9 +85,9 @@ void TrackingAction::PreUserTrackingAction(const G4Track *aTrack)
         return;
     }
 
-    if (aTrack->GetParentID() == 0 && aTrack->GetUserInformation() == 0) {
+    if (aTrack->GetParentID() == 0 && aTrack->GetUserInformation() == nullptr) {
         TrackInformation *aTrackInfo = new TrackInformation(aTrack);
-        G4Track *theTrack = (G4Track *)aTrack;
+        G4Track *theTrack = const_cast<G4Track *>(aTrack);
         theTrack->SetUserInformation(aTrackInfo);
     }
 
@@ -106,7 +106,7 @@ void TrackingAction::PreUserTrackingAction(const G4Track *aTrack)
             int theProcessSubType = theProcess->GetProcessSubType();
             const G4ThreeVector thePosition = aTrack->GetVertexPosition();
 
-            if (fN < MaxTracks && theLVName != "PbWO4AbsorberLV" && theLVName != "PbGlassAbsorberLV") {
+            if (fN < kMaxTracks && theLVName != "PbWO4AbsorberLV" && theLVName != "PbGlassAbsorberLV") {
                 fPID[fN] = aTrack->GetParticleDefinition()->GetPDGEncoding();
                 fTID[fN] = aTrack->GetTrackID();
                 fPTID[fN] = aTrack->GetParentID();
@@ -127,12 +127,12 @@ void TrackingAction::PostUserTrackingAction(const G4Track *aTrack)
     G4TrackVector *theSecondaries = fpTrackingManager->GimmeSecondaries();
 
     if (theSecondaries) {
-        TrackInformation *theTrackInfo = (TrackInformation *)(aTrack->GetUserInformation());
+        TrackInformation *theTrackInfo = static_cast<TrackInformation *>(aTrack->GetUserInformation());
         size_t nSecondaries = theSecondaries->size();
 
         if (nSecondaries > 0) {
             for (size_t i = 0; i < nSecondaries; i++) {
-                if ((*theSecondaries)[i]->GetUserInformation() == 0) {
+                if ((*theSecondaries)[i]->GetUserInformation() == nullptr) {
                     TrackInformation *newTrackInfo = new TrackInformation(theTrackInfo);
                     (*theSecondaries)[i]->SetUserInformation(newTrackInfo);
                 }

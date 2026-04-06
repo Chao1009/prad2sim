@@ -47,7 +47,7 @@ class G4VSteppingVerbose;
 class ActionInitialization : public G4VUserActionInitialization
 {
 public:
-    ActionInitialization(G4String conf, const SimConfig &config);
+    ActionInitialization(G4String conf, const SimConfig *config);
     virtual ~ActionInitialization();
 
     void Build() const;
@@ -56,7 +56,7 @@ public:
 
 private:
     G4String fConfig;
-    const SimConfig &fSimConfig;
+    const SimConfig *fSimConfig;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

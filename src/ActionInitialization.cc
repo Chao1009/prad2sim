@@ -47,7 +47,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::ActionInitialization(G4String conf, const SimConfig &config) : G4VUserActionInitialization(), fConfig(conf), fSimConfig(config)
+ActionInitialization::ActionInitialization(G4String conf, const SimConfig *config) : G4VUserActionInitialization(), fConfig(conf), fSimConfig(config)
 {
     //
 }
@@ -63,7 +63,7 @@ ActionInitialization::~ActionInitialization()
 
 void ActionInitialization::Build() const
 {
-    SetUserAction(new PrimaryGeneratorAction(fConfig, fSimConfig));
+    SetUserAction(new PrimaryGeneratorAction(fConfig, *fSimConfig));
     SetUserAction(new EventAction(fConfig));
     SetUserAction(new TrackingAction());
 }
