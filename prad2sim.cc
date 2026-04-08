@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// PRadSim.cc
+// prad2sim.cc
 // Developer : Chao Peng, Chao Gu
 // History:
 //   Aug 2012, C. Peng, Original version.

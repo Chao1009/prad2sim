@@ -47,10 +47,10 @@
 
 PhysicsListMessenger::PhysicsListMessenger(PhysListEmModified *phys) : G4UImessenger(), PhysicsList(phys)
 {
-    PhysicsListDir = new G4UIdirectory("/pradsim/physics/");
+    PhysicsListDir = new G4UIdirectory("/prad2sim/physics/");
     PhysicsListDir->SetGuidance("Physics list control");
 
-    BremsAngGenCmd = new G4UIcmdWithAString("/pradsim/physics/bremsanggen", this);
+    BremsAngGenCmd = new G4UIcmdWithAString("/prad2sim/physics/bremsanggen", this);
     BremsAngGenCmd->SetGuidance("Choose a angular generator for e-/e+ bremsstrahlung processes.");
     BremsAngGenCmd->SetGuidance("  Choice : dipbust tsai 2BS 2BN penelope");
     BremsAngGenCmd->SetParameterName("bremsanggen", false);

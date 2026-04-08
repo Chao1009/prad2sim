@@ -1,7 +1,7 @@
-# Macro file for PRadSim
+# Macro file for prad2sim
 #
 # To be run preferably in batch, without graphics:
-# % PRadSim run.mac
+# % prad2sim run.mac
 #
 # Change the default number of threads (in multi-threaded mode)
 #/run/numberOfWorkers 4

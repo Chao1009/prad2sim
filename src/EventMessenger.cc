@@ -48,15 +48,15 @@
 
 EventMessenger::EventMessenger(EventAction *act) : G4UImessenger(), Action(act)
 {
-    eventDir = new G4UIdirectory("/pradsim/event/");
+    eventDir = new G4UIdirectory("/prad2sim/event/");
     eventDir->SetGuidance("event control");
 
-    PrintCmd = new G4UIcmdWithAnInteger("/pradsim/event/printmodulo", this);
+    PrintCmd = new G4UIcmdWithAnInteger("/prad2sim/event/printmodulo", this);
     PrintCmd->SetGuidance("Print events modulo n");
     PrintCmd->SetParameterName("EventNb", false);
     PrintCmd->SetRange("EventNb>0");
 
-    OnlyRecordHitsCmd = new G4UIcmdWithABool("/pradsim/event/onlyrecordhits", this);
+    OnlyRecordHitsCmd = new G4UIcmdWithABool("/prad2sim/event/onlyrecordhits", this);
     OnlyRecordHitsCmd->SetGuidance("Only write the rootfile if there is a hit on HyCal");
     OnlyRecordHitsCmd->SetParameterName("onlyrecordhits", false);
     OnlyRecordHitsCmd->SetDefaultValue(false);

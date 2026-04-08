@@ -51,76 +51,76 @@
 
 PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act) : G4UImessenger(), Action(act)
 {
-    GunDir = new G4UIdirectory("/pradsim/gun/");
+    GunDir = new G4UIdirectory("/prad2sim/gun/");
     GunDir->SetGuidance("Primary generator control");
 
-    GunTypeCmd = new G4UIcmdWithAString("/pradsim/gun/type", this);
+    GunTypeCmd = new G4UIcmdWithAString("/prad2sim/gun/type", this);
     GunTypeCmd->SetGuidance("Choose a type of event generator.");
     GunTypeCmd->SetGuidance("  Choice : point, ring, cosmics, file");
     GunTypeCmd->SetParameterName("guntype", false);
     GunTypeCmd->SetCandidates("point ring cosmics file");
 
-    EventTypeCmd = new G4UIcmdWithAString("/pradsim/gun/evtype", this);
+    EventTypeCmd = new G4UIcmdWithAString("/prad2sim/gun/evtype", this);
     EventTypeCmd->SetGuidance("Choose a type of model.");
     EventTypeCmd->SetGuidance("  Choice : elastic, disintegration, moller, inelastic");
     EventTypeCmd->SetParameterName("evtype", false);
     EventTypeCmd->SetCandidates("elastic disintegration moller inelastic");
 
-    RecoilCmd = new G4UIcmdWithAString("/pradsim/gun/recoil", this);
+    RecoilCmd = new G4UIcmdWithAString("/prad2sim/gun/recoil", this);
     RecoilCmd->SetGuidance("Choose a type of recoil particle.");
     RecoilCmd->SetGuidance("  Choice : none, proton, deuteron");
     RecoilCmd->SetParameterName("recoil", false);
     RecoilCmd->SetCandidates("none proton deuteron");
 
-    EBeamCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/ebeam", this);
+    EBeamCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/gun/ebeam", this);
     EBeamCmd->SetGuidance("Set fE");
     EBeamCmd->SetParameterName("ebeam", false);
     EBeamCmd->SetDefaultUnit("MeV");
 
-    PosCmd = new G4UIcmdWith3VectorAndUnit("/pradsim/gun/pos", this);
+    PosCmd = new G4UIcmdWith3VectorAndUnit("/prad2sim/gun/pos", this);
     PosCmd->SetGuidance("Set fX,fY,fZ");
     PosCmd->SetParameterName("x", "y", "z", false);
     PosCmd->SetDefaultUnit("mm");
 
-    ThetaCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/theta", this);
+    ThetaCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/gun/theta", this);
     ThetaCmd->SetGuidance("Set fTheta");
     ThetaCmd->SetParameterName("theta", false);
     ThetaCmd->SetDefaultUnit("deg");
 
-    PhiCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/phi", this);
+    PhiCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/gun/phi", this);
     PhiCmd->SetGuidance("Set fPhi");
     PhiCmd->SetParameterName("phi", false);
     PhiCmd->SetDefaultUnit("deg");
 
-    ThetaLowCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/thetalow", this);
+    ThetaLowCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/gun/thetalow", this);
     ThetaLowCmd->SetGuidance("Set fThetaLo");
     ThetaLowCmd->SetParameterName("thetalo", false);
     ThetaLowCmd->SetDefaultUnit("deg");
 
-    ThetaHighCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/thetahigh", this);
+    ThetaHighCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/gun/thetahigh", this);
     ThetaHighCmd->SetGuidance("Set fThetaHi");
     ThetaHighCmd->SetParameterName("thetahi", false);
     ThetaHighCmd->SetDefaultUnit("deg");
 
-    EnpLowCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/enplow", this);
+    EnpLowCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/gun/enplow", this);
     EnpLowCmd->SetGuidance("Set fEnpLo");
     EnpLowCmd->SetParameterName("enplo", false);
     EnpLowCmd->SetDefaultUnit("MeV");
 
-    EnpHighCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/enphigh", this);
+    EnpHighCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/gun/enphigh", this);
     EnpHighCmd->SetGuidance("Set fEnpHi");
     EnpHighCmd->SetParameterName("enphi", false);
     EnpHighCmd->SetDefaultUnit("MeV");
 
-    EventFileCmd = new G4UIcmdWithAString("/pradsim/gun/path", this);
+    EventFileCmd = new G4UIcmdWithAString("/prad2sim/gun/path", this);
     EventFileCmd->SetGuidance("Choose path of event file");
     EventFileCmd->SetParameterName("path", false);
 
-    PileUpProfileCmd = new G4UIcmdWithAString("/pradsim/gun/pileup", this);
+    PileUpProfileCmd = new G4UIcmdWithAString("/prad2sim/gun/pileup", this);
     PileUpProfileCmd->SetGuidance("Choose path of pile-up profile");
     PileUpProfileCmd->SetParameterName("pileup", false);
 
-    TargetProfileCmd = new G4UIcmdWithAString("/pradsim/gun/target", this);
+    TargetProfileCmd = new G4UIcmdWithAString("/prad2sim/gun/target", this);
     TargetProfileCmd->SetGuidance("Choose path of target profile");
     TargetProfileCmd->SetParameterName("target", false);
 }

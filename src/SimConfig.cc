@@ -1,7 +1,7 @@
 //
 // ********************************************************************
 // * SimConfig.cc                                                      *
-// * JSON-based configuration loader for PRadSim.                      *
+// * JSON-based configuration loader for prad2sim.                     *
 // ********************************************************************
 //
 

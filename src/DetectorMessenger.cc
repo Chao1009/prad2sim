@@ -52,135 +52,135 @@
 
 DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(), Detector(det)
 {
-    PRadSimDir = new G4UIdirectory("/pradsim/");
-    PRadSimDir->SetGuidance("UI commands of this example");
+    Prad2SimDir = new G4UIdirectory("/prad2sim/");
+    Prad2SimDir->SetGuidance("UI commands of this example");
 
-    DetDir = new G4UIdirectory("/pradsim/det/");
+    DetDir = new G4UIdirectory("/prad2sim/det/");
     DetDir->SetGuidance("Detector control");
 
-    ZDir = new G4UIdirectory("/pradsim/det/z/");
+    ZDir = new G4UIdirectory("/prad2sim/det/z/");
     ZDir->SetGuidance("Detector z coords control");
 
-    TargetZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/target", this);
+    TargetZCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/det/z/target", this);
     TargetZCmd->SetGuidance("Set fTargetCenter");
     TargetZCmd->SetParameterName("targetz", false);
     TargetZCmd->SetDefaultUnit("cm");
 
-    RecoilDetZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/recoil", this);
+    RecoilDetZCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/det/z/recoil", this);
     RecoilDetZCmd->SetGuidance("Set fRecoilDetCenter");
     RecoilDetZCmd->SetParameterName("recoilz", false);
     RecoilDetZCmd->SetDefaultUnit("cm");
 
-    GEM1ZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/gem1", this);
+    GEM1ZCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/det/z/gem1", this);
     GEM1ZCmd->SetGuidance("Set fGEM1Center");
     GEM1ZCmd->SetParameterName("gem1z", false);
     GEM1ZCmd->SetDefaultUnit("cm");
 
-    GEM2ZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/gem2", this);
+    GEM2ZCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/det/z/gem2", this);
     GEM2ZCmd->SetGuidance("Set fGEM2Center");
     GEM2ZCmd->SetParameterName("gem2z", false);
     GEM2ZCmd->SetDefaultUnit("cm");
 
-    SciPlaneZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/plane", this);
+    SciPlaneZCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/det/z/plane", this);
     SciPlaneZCmd->SetGuidance("Set fSciPlaneCenter");
     SciPlaneZCmd->SetParameterName("planez", false);
     SciPlaneZCmd->SetDefaultUnit("cm");
 
-    HyCalZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/hycal", this);
+    HyCalZCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/det/z/hycal", this);
     HyCalZCmd->SetGuidance("Set fCrystalSurf");
     HyCalZCmd->SetParameterName("hycalz", false);
     HyCalZCmd->SetDefaultUnit("cm");
 
-    TargetDir = new G4UIdirectory("/pradsim/det/target/");
+    TargetDir = new G4UIdirectory("/prad2sim/det/target/");
     TargetDir->SetGuidance("Target control");
 
-    TargetRCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/target/radius", this);
+    TargetRCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/det/target/radius", this);
     TargetRCmd->SetGuidance("Set fTargetR");
     TargetRCmd->SetParameterName("targetr", false);
     TargetRCmd->SetDefaultUnit("mm");
 
-    TargetHalfLCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/target/halfl", this);
+    TargetHalfLCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/det/target/halfl", this);
     TargetHalfLCmd->SetGuidance("Set fTargetHalfL");
     TargetHalfLCmd->SetParameterName("targetl", false);
     TargetHalfLCmd->SetDefaultUnit("mm");
 
-    TargetMatCmd = new G4UIcmdWithAString("/pradsim/det/target/material", this);
+    TargetMatCmd = new G4UIcmdWithAString("/prad2sim/det/target/material", this);
     TargetMatCmd->SetGuidance("Choose a target material.");
     TargetMatCmd->SetGuidance("  Choice : hydrogen, deuteron");
     TargetMatCmd->SetParameterName("targetm", false);
     TargetMatCmd->SetCandidates("hydrogen deuteron");
 
-    TargetDensityRatioCmd = new G4UIcmdWithADouble("/pradsim/det/target/densityratio", this);
+    TargetDensityRatioCmd = new G4UIcmdWithADouble("/prad2sim/det/target/densityratio", this);
     TargetDensityRatioCmd->SetGuidance("Set fTargetDensityRatio");
     TargetDensityRatioCmd->SetParameterName("targetr", false);
 
-    RecoilDetDir = new G4UIdirectory("/pradsim/det/recoil/");
+    RecoilDetDir = new G4UIdirectory("/prad2sim/det/recoil/");
     RecoilDetDir->SetGuidance("Recoil detector control");
 
-    RecoilDetNSegCmd = new G4UIcmdWithAnInteger("/pradsim/det/recoil/nseg", this);
+    RecoilDetNSegCmd = new G4UIcmdWithAnInteger("/prad2sim/det/recoil/nseg", this);
     RecoilDetNSegCmd->SetGuidance("Set fRecoilDetNSeg");
     RecoilDetNSegCmd->SetParameterName("recoiln", false);
 
-    RecoilDetRCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/recoil/radius", this);
+    RecoilDetRCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/det/recoil/radius", this);
     RecoilDetRCmd->SetGuidance("Set fRecoilDetR");
     RecoilDetRCmd->SetParameterName("recoilr", false);
     RecoilDetRCmd->SetDefaultUnit("mm");
 
-    RecoilDetHalfLCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/recoil/halfl", this);
+    RecoilDetHalfLCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/det/recoil/halfl", this);
     RecoilDetHalfLCmd->SetGuidance("Set fRecoilDetHalfL");
     RecoilDetHalfLCmd->SetParameterName("recoill", false);
     RecoilDetHalfLCmd->SetDefaultUnit("mm");
 
-    RecoilDetL1ThicknessCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/recoil/thick1", this);
+    RecoilDetL1ThicknessCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/det/recoil/thick1", this);
     RecoilDetL1ThicknessCmd->SetGuidance("Set fRecoilDetL1Thickness");
     RecoilDetL1ThicknessCmd->SetParameterName("recoilt1", false);
     RecoilDetL1ThicknessCmd->SetDefaultUnit("um");
 
-    RecoilDetL2ThicknessCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/recoil/thick2", this);
+    RecoilDetL2ThicknessCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/det/recoil/thick2", this);
     RecoilDetL2ThicknessCmd->SetGuidance("Set fRecoilDetL2Thickness");
     RecoilDetL2ThicknessCmd->SetParameterName("recoilt2", false);
     RecoilDetL2ThicknessCmd->SetDefaultUnit("um");
 
-    ExtDensityRatioCmd = new G4UIcmdWithADouble("/pradsim/det/extdensityratio", this);
+    ExtDensityRatioCmd = new G4UIcmdWithADouble("/prad2sim/det/extdensityratio", this);
     ExtDensityRatioCmd->SetGuidance("Set fExtDensityRatio");
     ExtDensityRatioCmd->SetParameterName("extr", false);
 
-    SDDir = new G4UIdirectory("/pradsim/det/sensitive/");
+    SDDir = new G4UIdirectory("/prad2sim/det/sensitive/");
     SDDir->SetGuidance("Sensitive detector control");
 
-    TargetSDCmd = new G4UIcmdWithABool("/pradsim/det/sensitive/target", this);
+    TargetSDCmd = new G4UIcmdWithABool("/prad2sim/det/sensitive/target", this);
     TargetSDCmd->SetGuidance("Turn on TargetSD");
     TargetSDCmd->SetParameterName("targetsd", false);
 
-    RecoilDetSDCmd = new G4UIcmdWithABool("/pradsim/det/sensitive/recoil", this);
+    RecoilDetSDCmd = new G4UIcmdWithABool("/prad2sim/det/sensitive/recoil", this);
     RecoilDetSDCmd->SetGuidance("Turn on RecoilDetSD");
     RecoilDetSDCmd->SetParameterName("recoilsd", false);
 
-    GEMSDCmd = new G4UIcmdWithABool("/pradsim/det/sensitive/gem", this);
+    GEMSDCmd = new G4UIcmdWithABool("/prad2sim/det/sensitive/gem", this);
     GEMSDCmd->SetGuidance("Turn on GEMSD");
     GEMSDCmd->SetParameterName("gemsd", false);
 
-    SciPlaneSDCmd = new G4UIcmdWithABool("/pradsim/det/sensitive/sciplane", this);
+    SciPlaneSDCmd = new G4UIcmdWithABool("/prad2sim/det/sensitive/sciplane", this);
     SciPlaneSDCmd->SetGuidance("Turn on SciPlaneSD");
     SciPlaneSDCmd->SetParameterName("sciplanesd", false);
 
-    HyCalSDCmd = new G4UIcmdWithABool("/pradsim/det/sensitive/hycal", this);
+    HyCalSDCmd = new G4UIcmdWithABool("/prad2sim/det/sensitive/hycal", this);
     HyCalSDCmd->SetGuidance("Turn on HyCalSD");
     HyCalSDCmd->SetParameterName("hycalsd", false);
 
-    VirtualSDCmd = new G4UIcmdWithABool("/pradsim/det/sensitive/virtual", this);
+    VirtualSDCmd = new G4UIcmdWithABool("/prad2sim/det/sensitive/virtual", this);
     VirtualSDCmd->SetGuidance("Turn on VirtualSD");
     VirtualSDCmd->SetParameterName("virtualsd", false);
 
-    CalorimeterDir = new G4UIdirectory("/pradsim/det/calorimeter/");
+    CalorimeterDir = new G4UIdirectory("/prad2sim/det/calorimeter/");
     CalorimeterDir->SetGuidance("Calorimeter SD control");
 
-    AttenuationLGCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/calorimeter/depthleadglass", this);
+    AttenuationLGCmd = new G4UIcmdWithADoubleAndUnit("/prad2sim/det/calorimeter/depthleadglass", this);
     AttenuationLGCmd->SetGuidance("Set fAttenuationLGCmd");
     AttenuationLGCmd->SetParameterName("attenuationlg", false);
     AttenuationLGCmd->SetDefaultUnit("m");
 
-    ReflectanceLGCmd = new G4UIcmdWithADouble("/pradsim/det/calorimeter/reflectance", this);
+    ReflectanceLGCmd = new G4UIcmdWithADouble("/prad2sim/det/calorimeter/reflectance", this);
     ReflectanceLGCmd->SetGuidance("Set fReflectanceLG");
     ReflectanceLGCmd->SetParameterName("reflectancelg", false);
 }
@@ -219,7 +219,7 @@ DetectorMessenger::~DetectorMessenger()
     delete HyCalZCmd;
     delete ZDir;
     delete DetDir;
-    delete PRadSimDir;
+    delete Prad2SimDir;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

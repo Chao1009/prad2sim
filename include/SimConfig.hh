@@ -1,7 +1,7 @@
 //
 // ********************************************************************
 // * SimConfig.hh                                                      *
-// * JSON-based configuration loader for PRadSim.                      *
+// * JSON-based configuration loader for prad2sim.                     *
 // *                                                                   *
 // * Loads parameters from JSON files with inheritance support:         *
 // * each config file may reference a "_base" file whose values        *

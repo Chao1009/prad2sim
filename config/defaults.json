@@ -1,5 +1,5 @@
 {
-    "_comment": "PRadSim default configuration. Lengths in cm, energies in MeV, angles in deg.",
+    "_comment": "prad2sim default configuration. Lengths in cm, energies in MeV, angles in deg.",
     "config": "prad",
 
     "world": {

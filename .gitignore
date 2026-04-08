@@ -46,7 +46,7 @@ install_manifest.txt
 CTestTestfile.cmake
 compile_commands.json
 
-PRadSim
+prad2sim
 !evgen/esepp/Makefile
 !evgen/moller/Makefile
 !evgen/newep/Makefile

@@ -47,14 +47,14 @@
 
 TrackingMessenger::TrackingMessenger(TrackingAction *act) : G4UImessenger(), Action(act)
 {
-    TrackingDir = new G4UIdirectory("/pradsim/tracking/");
+    TrackingDir = new G4UIdirectory("/prad2sim/tracking/");
     TrackingDir->SetGuidance("Tracking control");
 
-    NoSecondaryCmd = new G4UIcmdWithABool("/pradsim/tracking/nosecondary", this);
+    NoSecondaryCmd = new G4UIcmdWithABool("/prad2sim/tracking/nosecondary", this);
     NoSecondaryCmd->SetGuidance("Turn on/off secondary particles");
     NoSecondaryCmd->SetParameterName("nosecondary", false);
 
-    SaveTrackInfoCmd = new G4UIcmdWithABool("/pradsim/tracking/savetrackinfo", this);
+    SaveTrackInfoCmd = new G4UIcmdWithABool("/prad2sim/tracking/savetrackinfo", this);
     SaveTrackInfoCmd->SetGuidance("Turn on/off saving tracking infomation");
     SaveTrackInfoCmd->SetParameterName("savetrackinfo", false);
 }

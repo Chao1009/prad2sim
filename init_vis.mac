@@ -1,4 +1,4 @@
-# Macro file for the initialization of PRadSim in interactive session
+# Macro file for the initialization of prad2sim in interactive session
 #
 # Set some default verbose
 /control/verbose 2

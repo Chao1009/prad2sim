@@ -63,7 +63,7 @@ public:
 private:
     DetectorConstruction      *Detector;
 
-    G4UIdirectory             *PRadSimDir;
+    G4UIdirectory             *Prad2SimDir;
     G4UIdirectory             *DetDir;
     G4UIdirectory             *ZDir;
     G4UIcmdWithADoubleAndUnit *TargetZCmd;

@@ -2,7 +2,7 @@
 # Setup the project
 #
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-project(PRadSim)
+project(prad2sim)
 
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
@@ -32,14 +32,14 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 # Locate sources and headers for this project
 # NB: headers are included so they will show up in IDEs
 #
-file(GLOB PRADSIM_SOURCES ${PROJECT_SOURCE_DIR}/src/*.cc ${PROJECT_SOURCE_DIR}/src/*.cpp)
-file(GLOB PRADSIM_HEADERS ${PROJECT_SOURCE_DIR}/include/*.hh ${PROJECT_SOURCE_DIR}/include/*.h)
+file(GLOB PRAD2SIM_SOURCES ${PROJECT_SOURCE_DIR}/src/*.cc ${PROJECT_SOURCE_DIR}/src/*.cpp)
+file(GLOB PRAD2SIM_HEADERS ${PROJECT_SOURCE_DIR}/include/*.hh ${PROJECT_SOURCE_DIR}/include/*.h)
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the libraries
 #
-add_executable(PRadSim PRadSim.cc ${PRADSIM_SOURCES} ${PRADSIM_HEADERS})
-target_link_libraries(PRadSim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
+add_executable(prad2sim prad2sim.cc ${PRAD2SIM_SOURCES} ${PRAD2SIM_HEADERS})
+target_link_libraries(prad2sim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Add subdirectories to build
@@ -50,10 +50,10 @@ add_subdirectory(digitization)
 # Copy all scripts to the build directory
 # This is so that we can run the executable directly because it relies on these scripts being in the current working directory
 #
-set(PRADSIM_RESOURCE_FILES init_vis.mac vis.mac gui.mac run.mac)
+set(PRAD2SIM_RESOURCE_FILES init_vis.mac vis.mac gui.mac run.mac)
 
 add_custom_target(copy_files ALL COMMENT "Copy files")
-foreach(_file ${PRADSIM_RESOURCE_FILES})
+foreach(_file ${PRAD2SIM_RESOURCE_FILES})
   add_custom_command(TARGET copy_files POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/${_file} ${PROJECT_BINARY_DIR}/${_file}
   )
