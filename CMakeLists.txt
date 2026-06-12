@@ -29,16 +29,67 @@ include_directories(${ROOT_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 #----------------------------------------------------------------------------
-# Locate sources and headers for this project
-# NB: headers are included so they will show up in IDEs
+# CAD (STL) geometry import via the vendored CADMesh header
+# (include/external/CADMesh.hh, built-in STL reader — Geant4 only).
+# Needed for the full prad2 / x17 vacuum window and housing geometry.
 #
-file(GLOB PRAD2SIM_SOURCES ${PROJECT_SOURCE_DIR}/src/*.cc ${PROJECT_SOURCE_DIR}/src/*.cpp)
-file(GLOB PRAD2SIM_HEADERS ${PROJECT_SOURCE_DIR}/include/*.hh ${PROJECT_SOURCE_DIR}/include/*.h)
+option(PRAD2SIM_USE_CADMESH "Enable CAD (STL) geometry import via CADMesh" ON)
+if(PRAD2SIM_USE_CADMESH)
+  add_compile_definitions(PRAD2SIM_USE_CADMESH)
+endif()
+
+#----------------------------------------------------------------------------
+# Project sources (explicit list — add new files here)
+#
+set(PRAD2SIM_SOURCES
+  src/ActionInitialization.cc
+  src/CalorimeterHit.cc
+  src/CalorimeterSD.cc
+  src/CheckScatteringSD.cc
+  src/ConfigObject.cpp
+  src/ConfigOption.cpp
+  src/ConfigParser.cpp
+  src/ConfigValue.cpp
+  src/CosmicsGenerator.cc
+  src/DetectorConstruction.cc
+  src/DetectorMessenger.cc
+  src/DeuteronDisintegration.cc
+  src/DRadPrimaryGenerator.cc
+  src/EventAction.cc
+  src/EventMessenger.cc
+  src/PhysicsListMessenger.cc
+  src/PhysListEmModified.cc
+  src/PhysListPureEm.cc
+  src/PRadPrimaryGenerator.cc
+  src/PrimaryGenerator.cc
+  src/PrimaryGeneratorAction.cc
+  src/PrimaryGeneratorMessenger.cc
+  src/RootTree.cc
+  src/SimConfig.cc
+  src/StandardDetectorSD.cc
+  src/StandardHit.cc
+  src/SteppingVerbose.cc
+  src/StepRecordSD.cc
+  src/TrackInformation.cc
+  src/TrackingAction.cc
+  src/TrackingDetectorSD.cc
+  src/TrackingMessenger.cc
+  src/detector/BeamlineModule.cc
+  src/detector/CadInsertsModule.cc
+  src/detector/GEMModule.cc
+  src/detector/HeBagModule.cc
+  src/detector/HyCalModule.cc
+  src/detector/MaterialBuilder.cc
+  src/detector/ScintillatorModule.cc
+  src/detector/TargetModule.cc
+  src/detector/VacuumSystemModule.cc
+  src/detector/VirtualDetModule.cc
+)
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the libraries
 #
-add_executable(prad2sim prad2sim.cc ${PRAD2SIM_SOURCES} ${PRAD2SIM_HEADERS})
+add_executable(prad2sim prad2sim.cc ${PRAD2SIM_SOURCES})
 target_link_libraries(prad2sim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 
 #----------------------------------------------------------------------------

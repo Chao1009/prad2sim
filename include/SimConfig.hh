@@ -46,6 +46,10 @@ public:
     std::string GetString(const std::string &section, const std::string &key, const std::string &defaultVal) const;
     std::vector<double> GetDoubleArray(const std::string &section, const std::string &key, const std::vector<double> &defaultVal) const;
 
+    // Raw JSON access for structured sections (e.g. cad.inserts arrays);
+    // returns nullptr if absent
+    const nlohmann::json *GetNode(const std::string &section, const std::string &key) const;
+
     void Print() const;
 
 private:
@@ -59,6 +63,9 @@ private:
 
     // Read and parse a JSON file; returns empty object on failure
     static nlohmann::json ReadJsonFile(const std::string &path);
+
+    // Read a config file and recursively resolve its "_base" chain
+    static nlohmann::json Resolve(const std::string &path);
 
     static nlohmann::json Merge(const nlohmann::json &base, const nlohmann::json &over);
     static std::string DirName(const std::string &path);

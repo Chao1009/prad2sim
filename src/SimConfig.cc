@@ -23,7 +23,7 @@ SimConfig::SimConfig() : fLoaded(false)
 
 bool SimConfig::Load(const std::string &path)
 {
-    nlohmann::json config = ReadJsonFile(path);
+    nlohmann::json config = Resolve(path);
 
     if (config.is_null()) {
         fLoaded = false;
@@ -31,8 +31,23 @@ bool SimConfig::Load(const std::string &path)
     }
 
     fPath = path;
+    fData = config;
 
-    // If the config references a base file, load and merge it
+    fLoaded = true;
+    std::cout << "SimConfig: loaded configuration from " << path << std::endl;
+    return true;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+nlohmann::json SimConfig::Resolve(const std::string &path)
+{
+    nlohmann::json config = ReadJsonFile(path);
+
+    if (config.is_null())
+        return config;
+
+    // Follow the "_base" chain recursively; each level overrides its base
     if (config.contains("_base") && config["_base"].is_string()) {
         std::string baseFile = config["_base"].get<std::string>();
         std::string dir = DirName(path);
@@ -40,19 +55,13 @@ bool SimConfig::Load(const std::string &path)
         if (!dir.empty())
             baseFile = dir + "/" + baseFile;
 
-        nlohmann::json base = ReadJsonFile(baseFile);
+        nlohmann::json base = Resolve(baseFile);
 
         if (!base.is_null())
-            fData = Merge(base, config);
-        else
-            fData = config;
-    } else {
-        fData = config;
+            return Merge(base, config);
     }
 
-    fLoaded = true;
-    std::cout << "SimConfig: loaded configuration from " << path << std::endl;
-    return true;
+    return config;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -71,6 +80,11 @@ const nlohmann::json *SimConfig::FindNode(const std::string &section, const std:
         return nullptr;
 
     return &fData[section][key];
+}
+
+const nlohmann::json *SimConfig::GetNode(const std::string &section, const std::string &key) const
+{
+    return FindNode(section, key);
 }
 
 template<typename T>

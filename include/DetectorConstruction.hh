@@ -1,51 +1,35 @@
 //
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
 // DetectorConstruction.hh
 // Developer : Chao Peng, Chao Gu
 // History:
 //   Aug 2012, C. Peng, Original version.
 //   Jan 2017, C. Gu, Rewrite with ROOT support.
 //   Mar 2017, C. Gu, Add DRad configuration.
+//   Jun 2026, Modular rework: geometry split into DetectorModule subsystems,
+//             prad2 / x17 configurations added.
 //
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+// DetectorConstruction is a thin assembler: it reads the configuration into
+// parameters (which the UI messenger may override before /run/initialize),
+// then builds an ordered list of DetectorModule instances per experiment
+// configuration and delegates volume and SD construction to them.
+//
 
 #ifndef DetectorConstruction_h
 #define DetectorConstruction_h 1
 
 #include "G4VUserDetectorConstruction.hh"
 
+#include "detector/CadInsertsModule.hh"
+
 #include "G4String.hh"
 
 #include <map>
 #include <memory>
+#include <vector>
 
 class SimConfig;
 class DetectorMessenger;
+class DetectorModule;
 
 class G4LogicalVolume;
 class G4VisAttributes;
@@ -84,22 +68,13 @@ public:
     inline void SetReflectanceLG(G4double val);
 
 private:
-    void DefineMaterials();
-
-    G4VPhysicalVolume *DefinePRadVolumes();
-    void DefinePRadSDs();
-
-    G4VPhysicalVolume *DefineDRadVolumes();
-    void DefineDRadSDs();
-
-    G4VPhysicalVolume *DefineTestVolumes();
-    void DefineTestSDs();
-
-    void AddVaccumBox(G4LogicalVolume *mother);
-    void AddGEM(G4LogicalVolume *mother, int layerid, bool culess);
-    void AddHyCal(G4LogicalVolume *mother);
+    // Assemble the per-configuration module list (called from Construct,
+    // after macro commands may have changed the parameters)
+    void BuildModules();
 
     G4String fConfig;
+
+    std::vector<std::unique_ptr<DetectorModule>> fModules;
 
     std::map<G4String, G4VisAttributes *> fVisAtts;
 
@@ -111,6 +86,7 @@ private:
     G4double fTargetHalfL;
     G4String fTargetMat;
     G4double fTargetDensityRatio;
+    G4double fTargetCellAperture;
 
     G4int fRecoilDetNSeg;
     G4double fRecoilDetCenter;
@@ -118,9 +94,6 @@ private:
     G4double fRecoilDetHalfL;
     G4double fRecoilDetL1Thickness;
     G4double fRecoilDetL2Thickness;
-
-    G4double fDownChamberCenter;
-    G4double fVacBoxCenter;
 
     G4double fGEMCenter[10];
 
@@ -130,10 +103,24 @@ private:
 
     G4double fExtDensityRatio;
 
+    // Virtual detector plane (per-configuration defaults; see config docs)
+    G4double fVDZFromTarget;
+    G4double fVDInnerR;
+    G4double fVDOuterR;
+
+    // PRad-II / X17 vacuum options
+    G4bool fUseHeBag;
+    G4bool fUseShielding;
+
+    // CAD inserts (STL via CADMesh), from the "cad" config section
+    std::string fCadModelDir;
+    std::vector<CadInsert> fCadInserts;
+
     G4bool fTargetSDOn;
     G4bool fRecoilDetSDOn;
     G4bool fGEMSDOn;
     G4bool fSciPlaneSDOn;
+    G4bool fSciVirtualSDOn;
     G4bool fHyCalSDOn;
     G4bool fVirtualSDOn;
 
@@ -215,6 +202,8 @@ inline void DetectorConstruction::EnableSD(G4String detname)
 
     if (detname == "Scintillator Plane") fSciPlaneSDOn = true;
 
+    if (detname == "Sci Virtual Detector") fSciVirtualSDOn = true;
+
     if (detname == "HyCal") fHyCalSDOn = true;
 
     if (detname == "Virtual Detector") fVirtualSDOn = true;
@@ -229,6 +218,8 @@ inline void DetectorConstruction::DisableSD(G4String detname)
     if (detname == "GEM") fGEMSDOn = false;
 
     if (detname == "Scintillator Plane") fSciPlaneSDOn = false;
+
+    if (detname == "Sci Virtual Detector") fSciVirtualSDOn = false;
 
     if (detname == "HyCal") fHyCalSDOn = false;
 

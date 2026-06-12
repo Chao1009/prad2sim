@@ -1,0 +1,53 @@
+   ------------------------------------------------------------------
+   ------------------------------------------------------------------
+
+
+Processing tests/regression/tree_stats.C("output/simrun_7.root")...
+entries 300
+EventID                  n=300        mean=149.5           rms=86.602059      
+GUN.N                    n=300        mean=1               rms=0              
+GUN.PID                  n=300        mean=11              rms=0              
+GUN.X                    n=300        mean=7.2835473e-05   rms=0.082519048    
+GUN.Y                    n=300        mean=0.003301502     rms=0.088085331    
+GUN.Z                    n=300        mean=-2910.0846      rms=12.107691      
+GUN.E                    n=300        mean=1096.9451       rms=2.4678867      
+GUN.P                    n=300        mean=1096.945        rms=2.467887       
+GUN.Theta                n=300        mean=0.061727376     rms=0.030862339    
+GUN.Phi                  n=300        mean=-0.019276378    rms=1.8453675      
+GEM.N                    n=300        mean=1.0866667       rms=0.39049826     
+GEM.PID                  n=326        mean=10.932515       rms=1.2165971      
+GEM.TID                  n=326        mean=16.08589        rms=130.23482      
+GEM.PTID                 n=326        mean=6.2300613       rms=63.979621      
+GEM.X                    n=326        mean=-22.843139      rms=227.35965      
+GEM.Y                    n=326        mean=-2.349898       rms=261.91739      
+GEM.Z                    n=326        mean=2294.0381       rms=19.817062      
+GEM.Xout                 n=326        mean=-22.755182      rms=227.42649      
+GEM.Yout                 n=326        mean=-2.1215618      rms=262.10148      
+GEM.Zout                 n=326        mean=2294.0857       rms=19.818415      
+GEM.P                    n=326        mean=1021.9971       rms=248.65722      
+GEM.Theta                n=326        mean=0.12903786      rms=0.37831893     
+GEM.Phi                  n=326        mean=0.043677837     rms=1.826886       
+GEM.Time                 n=326        mean=17.495807       rms=0.60454967     
+GEM.Edep                 n=326        mean=0.011227882     rms=0.010831245    
+GEM.TrackL               n=326        mean=0.052227858     rms=0.016376226    
+GEM.DID                  n=326        mean=0.53067485      rms=0.49905817     
+HC.N                     n=300        mean=6.26            rms=6.1934697      
+HC.PID                   n=1878       mean=19.189031       rms=70.292232      
+HC.TID                   n=1878       mean=481.67998       rms=510.11736      
+HC.PTID                  n=1878       mean=437.45101       rms=495.00709      
+HC.X                     n=1878       mean=-6.3472532      rms=252.36511      
+HC.Y                     n=1878       mean=9.5987526       rms=259.47888      
+HC.Z                     n=1878       mean=2750.6351       rms=69.3932        
+HC.Xout                  n=1878       mean=0               rms=0              
+HC.Yout                  n=1878       mean=0               rms=0              
+HC.Zout                  n=1878       mean=0               rms=0              
+HC.P                     n=1878       mean=168.81117       rms=363.92717      
+HC.Theta                 n=1878       mean=0.7268926       rms=0.74940548     
+HC.Phi                   n=1878       mean=0.03962173      rms=1.8068796      
+HC.Time                  n=1878       mean=18.996536       rms=0.47215063     
+HC.Edep                  n=1878       mean=0               rms=0              
+HC.TrackL                n=1878       mean=0               rms=0              
+HC.TotalEdep             n=300        mean=1005.02         rms=236.77727      
+HC.TotalTrackL           n=300        mean=972.40903       rms=235.95528      
+HC.ModuleEdep            n=518400     mean=3.6666667e+36   rms=1.8794207e+37  
+HC.ModuleTrackL          n=518400     mean=3.6666667e+36   rms=1.8794207e+37  
