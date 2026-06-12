@@ -1,0 +1,72 @@
+{
+    "_comment": "X17 search configuration (ported from PRadSim_X17). Long flight path: target moved upstream, GEMs/HyCal further downstream. Lengths in cm unless suffixed.",
+    "_base": "prad2.json",
+    "config": "x17",
+
+    "world": {
+        "size_xy": 150.0,
+        "size_z": 1200.0
+    },
+
+    "target": {
+        "_comment": "LH2 cell by default (PRadSim_X17 macros); 'Ta' gives the 4 um tantalum foil option (set radius 2.5, half_length 0.0002)",
+        "center": -455.0,
+        "radius": 1.25,
+        "half_length": 3.5,
+        "material": "LH2",
+        "density_ratio": 1.0
+    },
+
+    "gem": {
+        "center_ref": "target",
+        "center": [668.8, 708.8]
+    },
+
+    "hycal": {
+        "surface_ref": "target",
+        "crystal_surface": 750.6464,
+        "module_file": "database/hycal_module_prad2.dat",
+        "attenuation_lg": 0.0,
+        "reflectance_lg": 1.0
+    },
+
+    "virtual_det": {
+        "z_from_target": 718.8,
+        "inner_r": 2.0,
+        "outer_r": 100.0
+    },
+
+    "vacuum": {
+        "_comment": "kX17 style has the He-bag tube built in; shielding boxes around the beam pipe",
+        "shielding": true
+    },
+
+    "cad": {
+        "_comment": "X17 window adapter set, positioned at zero offset (the X17 STL files carry their own z; use the PRadSim_X17 models, NOT the PRadSim_PRad2 ones with the same names)",
+        "model_dir": "database/CADmodel/x17",
+        "inserts": [
+            {"stl": "Solid008.stl", "material": "Aluminum", "name": "Window9",  "z_offset_mm": 0.0},
+            {"stl": "Solid009.stl", "material": "Aluminum", "name": "Window10", "z_offset_mm": 0.0},
+            {"stl": "Solid010.stl", "material": "Aluminum", "name": "Window11", "z_offset_mm": 0.0}
+        ]
+    },
+
+    "sensitive_detectors": {
+        "target": false,
+        "recoil": false,
+        "gem": true,
+        "scintillator_plane": false,
+        "sci_virtual": false,
+        "hycal": true,
+        "virtual": true
+    },
+
+    "generator": {
+        "type": "ring",
+        "event_type": "elastic",
+        "beam_energy": 2200.0,
+        "vertex": [0.0, 0.0, -455.0],
+        "theta_range": [0.5, 6.5],
+        "energy_range": [1e-4, 1.0]
+    }
+}

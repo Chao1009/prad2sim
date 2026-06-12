@@ -69,3 +69,4 @@ tests/sim2replay/*.root
 # CAD models are large; copy from PRadSim_PRad2 / PRadSim_X17 (see database/CADmodel/README.md)
 database/CADmodel/*.stl
 database/CADmodel/*.stp
+database/CADmodel/x17/*.stl

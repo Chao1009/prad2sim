@@ -8,7 +8,15 @@ The STL files (~50 MB total) are **not version-controlled**. Copy them from
 the PRadSim_PRad2 / PRadSim_X17 repositories:
 
 ```bash
+# prad2 configuration (window assembly at -1280 mm offset + housing)
 cp ../PRadSim_PRad2/database/CADmodel/*.stl database/CADmodel/
+
+# x17 configuration (window adapter at zero offset — same file NAMES as the
+# PRad2 set but different content/positions, hence the subdirectory)
+mkdir -p database/CADmodel/x17
+cp ../PRadSim_X17/database/CADmodel/Solid008.stl \
+   ../PRadSim_X17/database/CADmodel/Solid009.stl \
+   ../PRadSim_X17/database/CADmodel/Solid010.stl database/CADmodel/x17/
 ```
 
 Sources:

@@ -34,7 +34,9 @@ VacuumSystemModule::VacuumSystemModule(Style style, double targetCenter, double 
 
 void VacuumSystemModule::BuildVolumes(G4LogicalVolume *world)
 {
-    if (fStyle == Style::kPRad2)
+    if (fStyle == Style::kX17)
+        BuildX17(world);
+    else if (fStyle == Style::kPRad2)
         BuildPRad2(world);
     else
         BuildPRad1(world);
@@ -125,7 +127,6 @@ void VacuumSystemModule::BuildPRad2(G4LogicalVolume *mother)
     G4Material *VacuumTubeM = G4Material::GetMaterial("Aluminum");
     G4Material *HeTubeM = G4Material::GetMaterial("Kapton");
     G4Material *TubeGasM = G4Material::GetMaterial("HeGas");
-    G4Material *ShieldingM = G4Material::GetMaterial("Aluminum");
 
     // Downstream chamber, extended by 89.3 mm with a cutout for the
     // scintillator housing (ported from PRadSim_PRad2)
@@ -191,8 +192,74 @@ void VacuumSystemModule::BuildPRad2(G4LogicalVolume *mother)
         new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter + 6361.11 * mm + 0.9 * mm + move), logicHoleWindow, "Vacuum Hole Window", mother, false, 0);
     }
 
+    BuildShielding(mother);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void VacuumSystemModule::BuildX17(G4LogicalVolume *mother)
+{
+    // Faithful port of PRadSim_X17 AddVaccumBox(): straight downstream
+    // chamber, vacuum box ending at target + 6405.82 mm, He-bag tube with
+    // thick/hole exit windows. The CAD window adapter (Solid008/009/010 from
+    // the X17 model set, z offset 0) comes from the configuration via
+    // CadInsertsModule.
+    G4Material *ChamberM = G4Material::GetMaterial("Aluminum");
+    G4Material *VacuumBoxM = G4Material::GetMaterial("Aluminum");
+    G4Material *VacuumTubeM = G4Material::GetMaterial("Kapton");
+    G4Material *TubeGasM = G4Material::GetMaterial("HeGas");
+
+    // Downstream chamber (straight, 163.2255 cm)
+    G4double DownChamberCenter = fTargetCenter + 521.865 * mm + 163.2255 * cm / 2.0;
+    G4double DownChamberHalfL = 163.2255 / 2.0 * cm;
+
+    G4double rInnerDC[] = {17.30 * cm, 17.30 * cm, 17.30 * cm, 17.30 * cm, 17.30 * cm, 17.30 * cm};
+    G4double rOuterDC[] = {17.78 * cm, 17.78 * cm, 17.78 * cm, 17.78 * cm, 17.78 * cm, 17.78 * cm};
+    G4double zPlaneDC[] = {0, 32.83 * cm, 32.83 * cm, 35.37 * cm, 35.37 * cm, 163.2255 * cm};
+    G4VSolid *solidDownChamber = new G4Polycone("DownstreamChamberS", 0, twopi, 6, zPlaneDC, rInnerDC, rOuterDC);
+    G4LogicalVolume *logicDownChamber = new G4LogicalVolume(solidDownChamber, ChamberM, "DownstreamChamberLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, DownChamberCenter - DownChamberHalfL), logicDownChamber, "Downstream Chamber", mother, false, 0);
+
+    // Vacuum box (X17 position)
+    G4double VacBoxCenter = fTargetCenter + 6405.82 * mm - 425.17 * cm / 2.0;
+    G4double VacBoxHalfL = 425.17 * cm / 2.0;
+    G4double rInner2[] = {17.30 * cm, 17.30 * cm, 50.17 * cm, 50.17 * cm, 78.11 * cm, 78.11 * cm};
+    G4double rOuter2[] = {17.78 * cm, 17.78 * cm, 50.80 * cm, 50.80 * cm, 78.74 * cm, 78.74 * cm};
+    G4double zPlane2[] = {0, 6.8 * cm, 17.6 * cm, 215.3 * cm, 229.5 * cm, 425.17 * cm};
+    G4VSolid *solidVacBox = new G4Polycone("VacuumBoxS", 0, twopi, 6, zPlane2, rInner2, rOuter2);
+    G4LogicalVolume *logicVacBox = new G4LogicalVolume(solidVacBox, VacuumBoxM, "VacuumBoxLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter - VacBoxHalfL), logicVacBox, "Vacuum Box", mother, false, 0);
+
+    // He Bag (dimension from Bob or Chris)
+    G4double VacTubeOR = 1.375 * 2.54 * cm * 0.5;
+    G4double VacTubeIR = VacTubeOR - 0.075 * mm;
+    G4double VacTubeL = 2745. * mm;
+    G4VSolid *solidHeTube = new G4Tubs("VacuumTubeS", VacTubeIR, VacTubeOR, VacTubeL / 2.0, 0, twopi);
+    G4LogicalVolume *logicHeTube = new G4LogicalVolume(solidHeTube, VacuumTubeM, "HeTubeLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter + 7736.93 * mm), logicHeTube, "He Tube", mother, false, 0);
+    G4VSolid *solidHeGas = new G4Tubs("HeGasTubeS", 0, VacTubeIR, VacTubeL / 2.0, 0, twopi);
+    G4LogicalVolume *logicHeGas = new G4LogicalVolume(solidHeGas, TubeGasM, "HeGasLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter + 7736.93 * mm), logicHeGas, "He Gas", mother, false, 0);
+
+    G4VSolid *solidThickWindow = new G4Tubs("ThickWindowS", 7.5 * mm, 22. * mm, 0.55 * mm / 2.0, 0, twopi);
+    G4LogicalVolume *logicThickWindow = new G4LogicalVolume(solidThickWindow, VacuumBoxM, "Vacuum Window with hole");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter + 6361.11 * mm), logicThickWindow, "Vacuum Window with hole", mother, false, 0);
+
+    G4VSolid *solidHoleWindow = new G4Tubs("HoleWindowS", 0, 17.5 * mm, 0.03 * mm / 2.0, 0, twopi);
+    G4LogicalVolume *logicHoleWindow = new G4LogicalVolume(solidHoleWindow, VacuumBoxM, "Vacuum Window Hole Window");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter + 6361.11 * mm + 0.9 * mm), logicHoleWindow, "Vacuum Hole Window", mother, false, 0);
+
+    BuildShielding(mother);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void VacuumSystemModule::BuildShielding(G4LogicalVolume *mother)
+{
     // Rectangular shielding boxes around the beam pipe (ported from PRadSim_X17)
     if (fUseShielding) {
+        G4Material *ShieldingM = G4Material::GetMaterial("Aluminum");
+
         G4double ShieldTubeL1 = 22.0 * cm;
         G4double ShieldTubeL2 = 26.0 * cm;
         G4double ShieldCenter1 = fGEMCenter0 - 70.0 * mm - ShieldTubeL1 / 2.0;

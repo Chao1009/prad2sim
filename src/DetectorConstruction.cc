@@ -244,7 +244,8 @@ void DetectorConstruction::BuildModules()
         fModules.push_back(std::make_unique<BeamlineModule>(fTargetCenter));
 
         fModules.push_back(std::make_unique<VacuumSystemModule>(
-            VacuumSystemModule::Style::kPRad2, fTargetCenter, fWorldSizeZ,
+            fConfig == "x17" ? VacuumSystemModule::Style::kX17 : VacuumSystemModule::Style::kPRad2,
+            fTargetCenter, fWorldSizeZ,
             fTargetCenter + 308.38 * mm, fUseHeBag, fUseShielding,
             fGEMCenter[0], fGEMCenter[1]));
 
@@ -256,8 +257,11 @@ void DetectorConstruction::BuildModules()
             std::vector<GEMModule::Station>{{fGEMCenter[0], false}, {fGEMCenter[1], false}},
             fGEMSDOn));
 
-        fModules.push_back(std::make_unique<ScintillatorModule>(
-            ScintillatorModule::Style::kFourPlane, fTargetCenter, fSciPlaneSDOn, fSciVirtualSDOn));
+        // the four-paddle scintillator + housing is a PRad-II addition;
+        // the X17 setup runs without it
+        if (fConfig == "prad2")
+            fModules.push_back(std::make_unique<ScintillatorModule>(
+                ScintillatorModule::Style::kFourPlane, fTargetCenter, fSciPlaneSDOn, fSciVirtualSDOn));
 
         fModules.push_back(std::make_unique<HyCalModule>(fCrystalSurf, fAttenuationLG, fHyCalSDOn, fHyCalModuleFile));
 
