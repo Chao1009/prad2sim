@@ -1,0 +1,88 @@
+{
+    "_comment": "PRad-II experiment configuration (ported from PRadSim_PRad2). Lengths in cm unless suffixed, energies in MeV, angles in deg.",
+    "_base": "defaults.json",
+    "config": "prad2",
+
+    "target": {
+        "center": -291.1,
+        "radius": 2.5,
+        "half_length": 2.0,
+        "material": "H2Gas",
+        "density_ratio": 1.0,
+        "cell_aperture_mm": 1.0
+    },
+
+    "gem": {
+        "center_ref": "target",
+        "center": [540.7, 580.7]
+    },
+
+    "hycal": {
+        "surface_ref": "target",
+        "crystal_surface": 622.5522,
+        "module_file": "database/hycal_module_prad2.dat",
+        "attenuation_lg": 0.0,
+        "reflectance_lg": 1.0
+    },
+
+    "virtual_det": {
+        "_comment": "sim2replay 'VD' plane: annulus just behind the last GEM station",
+        "z_from_target": 590.7,
+        "inner_r": 2.0,
+        "outer_r": 100.0
+    },
+
+    "vacuum": {
+        "use_he_bag": false,
+        "shielding": false
+    },
+
+    "cad": {
+        "_comment": "STL models are not version-controlled; see database/CADmodel/README.md. Windows carry the PRadSim_PRad2 z offset (-1280 mm from target), the housing sits at +308.38 mm.",
+        "model_dir": "database/CADmodel",
+        "inserts": [
+            {"stl": "PRad_Housing.stl", "material": "SSteel",   "name": "HOUSING",  "z_offset_mm": 308.38},
+            {"stl": "Solid.stl",        "material": "SSteel",   "name": "Window1",  "z_offset_mm": -1280.0},
+            {"stl": "Solid001.stl",     "material": "SSteel",   "name": "Window2",  "z_offset_mm": -1280.0},
+            {"stl": "Solid002.stl",     "material": "SSteel",   "name": "Window3",  "z_offset_mm": -1280.0},
+            {"stl": "Solid003.stl",     "material": "Aluminum", "name": "Window4",  "z_offset_mm": -1280.0},
+            {"stl": "Solid004.stl",     "material": "Aluminum", "name": "Window5",  "z_offset_mm": -1280.0},
+            {"stl": "Solid006.stl",     "material": "SSteel",   "name": "Window7",  "z_offset_mm": -1280.0},
+            {"stl": "Solid008.stl",     "material": "Aluminum", "name": "Window9",  "z_offset_mm": -1280.0},
+            {"stl": "Solid009.stl",     "material": "Aluminum", "name": "Window10", "z_offset_mm": -1280.0},
+            {"stl": "Solid010.stl",     "material": "Aluminum", "name": "Window11", "z_offset_mm": -1280.0},
+            {"stl": "Solid011.stl",     "material": "Aluminum", "name": "Window12", "z_offset_mm": -1280.0},
+            {"stl": "Solid012.stl",     "material": "Aluminum", "name": "Window13", "z_offset_mm": -1280.0},
+            {"stl": "Solid013.stl",     "material": "Aluminum", "name": "Window14", "z_offset_mm": -1280.0},
+            {"stl": "Solid014.stl",     "material": "Viton",    "name": "Window15", "z_offset_mm": -1280.0},
+            {"stl": "Solid015.stl",     "material": "Aluminum", "name": "Window16", "z_offset_mm": -1280.0},
+            {"stl": "Solid016.stl",     "material": "Aluminum", "name": "Window17", "z_offset_mm": -1280.0},
+            {"stl": "Solid017.stl",     "material": "Viton",    "name": "Window18", "z_offset_mm": -1280.0},
+            {"stl": "Solid018.stl",     "material": "Aluminum", "name": "Window19", "z_offset_mm": -1280.0},
+            {"stl": "Solid019.stl",     "material": "Aluminum", "name": "Window20", "z_offset_mm": -1280.0},
+            {"stl": "Solid020.stl",     "material": "Aluminum", "name": "Window21", "z_offset_mm": -1280.0},
+            {"stl": "Solid021.stl",     "material": "Aluminum", "name": "Window22", "z_offset_mm": -1280.0},
+            {"stl": "Solid022.stl",     "material": "Aluminum", "name": "Window23", "z_offset_mm": -1280.0},
+            {"stl": "Solid023.stl",     "material": "Aluminum", "name": "Window24", "z_offset_mm": -1280.0}
+        ]
+    },
+
+    "sensitive_detectors": {
+        "target": false,
+        "recoil": false,
+        "gem": true,
+        "scintillator_plane": true,
+        "sci_virtual": false,
+        "hycal": true,
+        "virtual": true
+    },
+
+    "generator": {
+        "type": "ring",
+        "event_type": "elastic",
+        "beam_energy": 3500.0,
+        "vertex": [0.0, 0.0, -291.1],
+        "theta_range": [0.5, 6.5],
+        "energy_range": [1e-4, 1.0]
+    }
+}

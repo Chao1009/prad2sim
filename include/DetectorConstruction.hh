@@ -100,6 +100,7 @@ private:
     G4double fSciPlaneCenter;
 
     G4double fCrystalSurf;
+    G4String fHyCalModuleFile;
 
     G4double fExtDensityRatio;
 

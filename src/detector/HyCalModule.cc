@@ -213,7 +213,7 @@ void HyCalModule::BuildSDs()
 {
     if (!fSdOn || fAbsorberLVs.empty()) return;
 
-    CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC", fAttenuationFile);
+    CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC", fAttenuationFile, fCrystalSurf);
     HyCalSD->SetAttenuationLG(fAttenuationLG);
     G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
 

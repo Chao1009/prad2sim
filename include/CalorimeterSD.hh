@@ -41,6 +41,7 @@
 
 #include "Math/Interpolator.h"
 #include "Math/InterpolationTypes.h"
+#include "CLHEP/Units/SystemOfUnits.h"
 #include "G4String.hh"
 
 #include <memory>
@@ -61,7 +62,10 @@ public:
     static constexpr int kNModules = 1728;
 
 
-    CalorimeterSD(G4String name, G4String abbrev, G4String pwo_filename);
+    // crystalSurf: world z of the PbWO4 front surface (the lead-glass
+    // surfaces are derived from it) — needed by the attenuation models
+    CalorimeterSD(G4String name, G4String abbrev, G4String pwo_filename,
+                  G4double crystalSurf = 273.515 * CLHEP::cm);
     virtual ~CalorimeterSD();
 
     virtual void Initialize(G4HCofThisEvent *);
@@ -79,6 +83,11 @@ protected:
 
     double fAttenuationLG;
     double fReflectanceLG;
+
+    // detector surfaces (world z), set from the geometry
+    double fZCRFrontSurf;
+    double fZLGFrontSurf;
+    double fZLGBackSurf;
 
     double fTotalEdep;
     double fTotalTrackL;

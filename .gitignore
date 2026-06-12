@@ -65,3 +65,7 @@ tests/sim2replay/*.root
 !evgen/qesed/Makefile
 !evgen/eds/Makefile
 !evgen/mitee/Makefile
+
+# CAD models are large; copy from PRadSim_PRad2 / PRadSim_X17 (see database/CADmodel/README.md)
+database/CADmodel/*.stl
+database/CADmodel/*.stp

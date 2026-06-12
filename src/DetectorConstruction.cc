@@ -87,9 +87,15 @@ DetectorConstruction::DetectorConstruction(G4String conf, const SimConfig &confi
     // Scintillator plane (DRad single plane)
     fSciPlaneCenter = config.GetDouble("scintillator_plane", "center", 262.5) * cm;
 
-    // HyCal (surface_ref "target" places it relative to the target)
+    // HyCal (surface_ref "target" places it relative to the target).
+    // prad2/x17 build the calorimeter from a table generated from the prad2
+    // reconstruction map (hycal_map.json) so cluster centers resolve — see
+    // database/make_hycal_table_from_map.py.
     double hycalBase = (config.GetString("hycal", "surface_ref", "absolute") == "target") ? fTargetCenter : 0.0;
     fCrystalSurf = config.GetDouble("hycal", "crystal_surface", 295.0) * cm + hycalBase;
+    fHyCalModuleFile = config.GetString("hycal", "module_file",
+                                        isPRad2Like ? "database/hycal_module_prad2.dat"
+                                                    : "database/hycal_module_shuffled.dat");
 
     fExtDensityRatio = config.GetDouble("ext_density_ratio", 1.0);
 
@@ -207,7 +213,7 @@ void DetectorConstruction::BuildModules()
         fModules.push_back(std::make_unique<ScintillatorModule>(
             ScintillatorModule::Style::kSinglePlane, fSciPlaneCenter, fSciPlaneSDOn));
 
-        fModules.push_back(std::make_unique<HyCalModule>(fCrystalSurf, fAttenuationLG, fHyCalSDOn));
+        fModules.push_back(std::make_unique<HyCalModule>(fCrystalSurf, fAttenuationLG, fHyCalSDOn, fHyCalModuleFile));
     } else if (fConfig == "test") {
         // Simple test setup: target at the origin + virtual detector,
         // both always sensitive (the target records every step)
@@ -253,7 +259,7 @@ void DetectorConstruction::BuildModules()
         fModules.push_back(std::make_unique<ScintillatorModule>(
             ScintillatorModule::Style::kFourPlane, fTargetCenter, fSciPlaneSDOn, fSciVirtualSDOn));
 
-        fModules.push_back(std::make_unique<HyCalModule>(fCrystalSurf, fAttenuationLG, fHyCalSDOn));
+        fModules.push_back(std::make_unique<HyCalModule>(fCrystalSurf, fAttenuationLG, fHyCalSDOn, fHyCalModuleFile));
 
         fModules.push_back(std::make_unique<VirtualDetModule>(
             fTargetCenter + fVDZFromTarget, fVDInnerR, fVDOuterR, 0.1 * mm / 2.0, fVirtualSDOn));
@@ -274,7 +280,7 @@ void DetectorConstruction::BuildModules()
             std::vector<GEMModule::Station>{{fGEMCenter[0], false}},
             fGEMSDOn));
 
-        fModules.push_back(std::make_unique<HyCalModule>(fCrystalSurf, fAttenuationLG, fHyCalSDOn));
+        fModules.push_back(std::make_unique<HyCalModule>(fCrystalSurf, fAttenuationLG, fHyCalSDOn, fHyCalModuleFile));
 
         fModules.push_back(std::make_unique<VirtualDetModule>(
             fTargetCenter + fVDZFromTarget, fVDInnerR, fVDOuterR, 0.1 * mm / 2.0, fVirtualSDOn));

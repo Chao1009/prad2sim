@@ -66,16 +66,12 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-static const G4double ZCRFrontSurf = 273.515 * cm;
-//static const G4double ZCRBackSurf = ZCRFrontSurf + 18.0 * cm;
-static const G4double ZLGFrontSurf = ZCRFrontSurf - 9.73 * cm;
-static const G4double ZLGBackSurf = ZLGFrontSurf + 45.0 * cm;
 static const G4double sin_phi_c[100] = {0.01570732, 0.04710645, 0.07845910, 0.10973431, 0.14090123, 0.17192910, 0.20278730, 0.23344536, 0.26387305, 0.29404033, 0.32391742, 0.35347484, 0.38268343, 0.41151436, 0.43993917, 0.46792981, 0.49545867, 0.52249856, 0.54902282, 0.57500525, 0.60042023, 0.62524266, 0.64944805, 0.67301251, 0.69591280, 0.71812630, 0.73963109, 0.76040597, 0.78043041, 0.79968466, 0.81814972, 0.83580736, 0.85264016, 0.86863151, 0.88376563, 0.89802758, 0.91140328, 0.92387953, 0.93544403, 0.94608536, 0.95579301, 0.96455742, 0.97236992, 0.97922281, 0.98510933, 0.99002366, 0.99396096, 0.99691733, 0.99888987, 0.99987663, 0.99987663, 0.99888987, 0.99691733, 0.99396096, 0.99002366, 0.98510933, 0.97922281, 0.97236992, 0.96455742, 0.95579301, 0.94608536, 0.93544403, 0.92387953, 0.91140328, 0.89802758, 0.88376563, 0.86863151, 0.85264016, 0.83580736, 0.81814972, 0.79968466, 0.78043041, 0.76040597, 0.73963109, 0.71812630, 0.69591280, 0.67301251, 0.64944805, 0.62524266, 0.60042023, 0.57500525, 0.54902282, 0.52249856, 0.49545867, 0.46792981, 0.43993917, 0.41151436, 0.38268343, 0.35347484, 0.32391742, 0.29404033, 0.26387305, 0.23344536, 0.20278730, 0.17192910, 0.14090123, 0.10973431, 0.07845910, 0.04710645, 0.01570732};
 static const G4double cos_phi_c[100] = {0.99987663, 0.99888987, 0.99691733, 0.99396096, 0.99002366, 0.98510933, 0.97922281, 0.97236992, 0.96455742, 0.95579301, 0.94608536, 0.93544403, 0.92387953, 0.91140328, 0.89802758, 0.88376563, 0.86863151, 0.85264016, 0.83580736, 0.81814972, 0.79968466, 0.78043041, 0.76040597, 0.73963109, 0.71812630, 0.69591280, 0.67301251, 0.64944805, 0.62524266, 0.60042023, 0.57500525, 0.54902282, 0.52249856, 0.49545867, 0.46792981, 0.43993917, 0.41151436, 0.38268343, 0.35347484, 0.32391742, 0.29404033, 0.26387305, 0.23344536, 0.20278730, 0.17192910, 0.14090123, 0.10973431, 0.07845910, 0.04710645, 0.01570732, -0.01570732, -0.04710645, -0.07845910, -0.10973431, -0.14090123, -0.17192910, -0.20278730, -0.23344536, -0.26387305, -0.29404033, -0.32391742, -0.35347484, -0.38268343, -0.41151436, -0.43993917, -0.46792981, -0.49545867, -0.52249856, -0.54902282, -0.57500525, -0.60042023, -0.62524266, -0.64944805, -0.67301251, -0.69591280, -0.71812630, -0.73963109, -0.76040597, -0.78043041, -0.79968466, -0.81814972, -0.83580736, -0.85264016, -0.86863151, -0.88376563, -0.89802758, -0.91140328, -0.92387953, -0.93544403, -0.94608536, -0.95579301, -0.96455742, -0.97236992, -0.97922281, -0.98510933, -0.99002366, -0.99396096, -0.99691733, -0.99888987, -0.99987663};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-CalorimeterSD::CalorimeterSD(G4String name, G4String abbrev, G4String pwo_filename) : StandardDetectorSD(name, abbrev)
+CalorimeterSD::CalorimeterSD(G4String name, G4String abbrev, G4String pwo_filename, G4double crystalSurf) : StandardDetectorSD(name, abbrev)
 {
     G4String cname = "ModuleColl";
     cname = fAbbrev + cname;
@@ -83,6 +79,12 @@ CalorimeterSD::CalorimeterSD(G4String name, G4String abbrev, G4String pwo_filena
 
     fAttenuationLG = 0.0;
     fReflectanceLG = 1.0;
+
+    // detector surfaces, from the geometry (the attenuation models need the
+    // light-collection path lengths inside the crystals)
+    fZCRFrontSurf = crystalSurf;
+    fZLGFrontSurf = fZCRFrontSurf - 9.73 * cm;
+    fZLGBackSurf = fZLGFrontSurf + 45.0 * cm;
 
     fTotalEdep = 0;
     fTotalTrackL = 0;
@@ -201,10 +203,10 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
                     direction_c.rotateUz(direction_0);
 
                     if (direction_c.z() > 0) {
-                        distance = (ZLGBackSurf - InZ) / direction_c.z();
+                        distance = (fZLGBackSurf - InZ) / direction_c.z();
                         nreflect = int((fabs(distance * direction_c.x()) + 19.0) / 38.0) + int((fabs(distance * direction_c.y()) + 19.0) / 38.0);
                     } else if (direction_c.z() < 0) {
-                        distance = -(InZ - ZLGFrontSurf + 450.0) / direction_c.z();
+                        distance = -(InZ - fZLGFrontSurf + 450.0) / direction_c.z();
                         nreflect = int((fabs(distance * direction_c.x()) + 19.0) / 38.0) + int((fabs(distance * direction_c.y()) + 19.0) / 38.0) + 1;
                     } else
                         continue;
@@ -217,7 +219,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
                 StepLength = aStep->GetStepLength() * factor * sin_theta_c * sin_theta_c;
             } // else beta < 1 / n, no Cherenkov light
         } else { // PbWO4
-            G4double depth = InZ - ZCRFrontSurf;
+            G4double depth = InZ - fZCRFrontSurf;
             G4double factor = fInterpolator->Eval(depth);
 
             if (std::isnan(factor))
