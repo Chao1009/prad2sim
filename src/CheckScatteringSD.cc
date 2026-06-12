@@ -58,7 +58,7 @@
 
 CheckScatteringSD::CheckScatteringSD(G4String name, G4String abbrev) : G4VSensitiveDetector(name), fAbbrev(abbrev), fRegistered(false)
 {
-    fID = name.hash() % 100000;
+    fID = std::hash<std::string>()(name) % 100000;
     //G4cout << name << "\t" << fAbbrev << "\t" << fID << G4endl;
 
     fCoulomb = false;

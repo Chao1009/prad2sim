@@ -195,18 +195,18 @@ void DetectorConstruction::DefineMaterials()
     // Space Vacuum
     G4Material *Galaxy = new G4Material("Galaxy", density = universe_mean_density, ncomponents = 1, kStateGas, 0.1 * kelvin, 1.0e-19 * pascal);
     Galaxy->AddElement(H, fractionmass = 1.0);
-    fVisAtts[Galaxy->GetName()] = new G4VisAttributes(G4VisAttributes::Invisible);
+    fVisAtts[Galaxy->GetName()] = new G4VisAttributes(G4VisAttributes::GetInvisible());
 
     // Air
     G4Material *Air = new G4Material("Air", density = 1.292 * mg / cm3, ncomponents = 2);
     Air->AddElement(N, fractionmass = 0.7);
     Air->AddElement(O, fractionmass = 0.3);
-    fVisAtts[Air->GetName()] = new G4VisAttributes(G4VisAttributes::Invisible);
+    fVisAtts[Air->GetName()] = new G4VisAttributes(G4VisAttributes::GetInvisible());
 
     // Air vacuum of 1.e-6 torr at room temperature, 1 atmosphere = 760 torr
     G4Material *Vacuum = new G4Material("Vacuum", density = 1.0e-6 / 760.0 * 1.292 * mg / cm3, ncomponents = 1, kStateGas, STP_Temperature, 1.0e-6 / 760.0 * atmosphere);
     Vacuum->AddMaterial(Air, fractionmass = 1.0);
-    fVisAtts[Vacuum->GetName()] = new G4VisAttributes(G4VisAttributes::Invisible);
+    fVisAtts[Vacuum->GetName()] = new G4VisAttributes(G4VisAttributes::GetInvisible());
 
     // Hydrogen Gas (T = 19.5 K, P = 470 mTorr)
     G4Material *H2Gas = new G4Material("H2Gas", density = fTargetDensityRatio * 0.47 / 760.0 * 273.15 / 19.5 * 0.08988 * mg / cm3, ncomponents = 1, kStateGas, 19.5 * kelvin, fTargetDensityRatio * 0.47 / 760.0 * atmosphere);
@@ -321,7 +321,7 @@ void DetectorConstruction::DefineMaterials()
     Polyester->AddElement(C, natoms = 10);
     Polyester->AddElement(H, natoms = 8);
     Polyester->AddElement(O, natoms = 4);
-    fVisAtts[Polyester->GetName()] = new G4VisAttributes(G4VisAttributes::Invisible);
+    fVisAtts[Polyester->GetName()] = new G4VisAttributes(G4VisAttributes::GetInvisible());
 
     // Brass
     G4Material *Brass = new G4Material("Brass", density = 8.53 * g / cm3, ncomponents = 2);

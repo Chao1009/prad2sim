@@ -57,7 +57,7 @@ class CalorimeterSD: public StandardDetectorSD
 {
 public:
     static constexpr int kInterpolPoints = 181;
-    static const ROOT::Math::Interpolation::Type kInterpolType = ROOT::Math::Interpolation::kCSPLINE;
+    static constexpr ROOT::Math::Interpolation::Type kInterpolType = ROOT::Math::Interpolation::kCSPLINE;
     static constexpr int kNModules = 1728;
 
 

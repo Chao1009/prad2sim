@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------
 # Setup the project
 #
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.16)
 project(prad2sim)
 
 #----------------------------------------------------------------------------
@@ -44,7 +44,14 @@ target_link_libraries(prad2sim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 #----------------------------------------------------------------------------
 # Add subdirectories to build
 #
-add_subdirectory(digitization)
+# The digitization stage (PRadDig/PRadRec) needs EVIO and the old PRadAnalyzer
+# ($PRAD_PATH). Make it optional so the core simulation builds without them.
+# The PRad-II data interface goes through prad2's sim2replay instead — see
+# plans/03-data-interface.md.
+option(BUILD_DIGITIZATION "Build the legacy EVIO/PRadAnalyzer digitization stage" ON)
+if(BUILD_DIGITIZATION)
+  add_subdirectory(digitization)
+endif()
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory

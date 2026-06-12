@@ -81,6 +81,9 @@ protected:
     double fX[kMaxNHits];
     double fY[kMaxNHits];
     double fZ[kMaxNHits];
+    double fXOut[kMaxNHits]; // exit position, needed by prad2 sim2replay (GEM.Xout)
+    double fYOut[kMaxNHits];
+    double fZOut[kMaxNHits];
     double fMomentum[kMaxNHits];
     double fTheta[kMaxNHits];
     double fPhi[kMaxNHits];
