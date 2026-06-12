@@ -1,8 +1,16 @@
 # sim2replay contract test
 
-Validates the **simulation → replayed-data** interface end to end without a
-Geant4 build, by feeding a synthetic truth tree into the real, installed
-`prad2ana_sim2replay` and checking it emits a valid `recon` tree.
+Two levels:
+
+1. **`make_fake_T.C`** — synthetic contract test (no Geant4 needed): feeds a
+   hand-built truth tree into the installed `prad2ana_sim2replay`.
+2. **`run_e2e.sh`** — full end-to-end: runs real `prad2sim` prad2 jobs
+   (elastic + møller at 3.5 GeV), converts with `sim2replay`, and validates
+   the recon tree (entries, resolved `cl_center`, HyCal↔GEM matches).
+
+Validates the **simulation → replayed-data** interface end to end, by feeding
+truth trees into the real, installed `prad2ana_sim2replay` and checking it
+emits a valid `recon` tree.
 
 This is the contract prad2sim's ROOT output (`output/<name>_<run>.root`, tree
 `T`) must satisfy. See [`../../plans/03-data-interface.md`](../../plans/03-data-interface.md).

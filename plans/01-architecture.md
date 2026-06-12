@@ -1,5 +1,13 @@
 # Target architecture
 
+> **Status (2026-06-12): implemented.** The module layer lives in
+> `src/detector/` (`DetectorModule` base, MaterialBuilder, per-subsystem
+> modules incl. config-driven `CadInsertsModule`), `DetectorConstruction` is
+> the thin per-config assembler, and prad/drad/prad2/x17/test all build from
+> it. Deviations from the sketch below: the recoil detector lives inside
+> `DRadTargetModule` (it is physically inside the target gas volume), and
+> the `gRootTree` removal + GeneratorFactory remain deferred.
+
 Goal: one package, four experiment configs, geometry/physics/output driven by
 config, with small composable units that are easy to read, test, and extend.
 

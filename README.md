@@ -1,12 +1,23 @@
 # prad2sim
 
-Geant4 simulation package for the Jefferson Lab PRad / DRad experiments.
+Geant4 simulation package for the Jefferson Lab PRad / DRad / PRad-II / X17
+experiments.
 
 `prad2sim` propagates events from a beam-target interaction through the full
-PRad/DRad setup (target, GEM trackers, scintillator plane, HyCal calorimeter
-and the recoil detector for DRad), records hits to a ROOT tree, and feeds the
-result into a digitization stage that produces EVIO files compatible with
-[PRadAnalyzer](https://github.com/JeffersonLab/PRadAnalyzer).
+experimental setup (target, GEM trackers, scintillators, HyCal calorimeter,
+and the recoil detector for DRad), records truth hits to a ROOT tree, and
+interfaces with the PRad-II analysis chain: the `prad2` toolkit's
+`prad2ana_sim2replay` converts the truth tree into the same `recon` tree
+format as replayed data (see `tests/sim2replay/`), so simulated events are
+consumed by `prad2evviewer` and the analysis tools identically to real data.
+A legacy digitization stage producing EVIO files for
+[PRadAnalyzer](https://github.com/JeffersonLab/PRadAnalyzer) is retained as
+an optional component.
+
+Geometry is organized as composable `DetectorModule` subsystems
+(`src/detector/`); each experiment configuration assembles its module list
+from JSON parameters, so adding a configuration does not mean editing a
+monolithic geometry function. Requires Geant4 ≥ 11 (developed against 11.4).
 
 ## Dependencies
 
@@ -27,8 +38,19 @@ make -j
 ```
 
 This produces the `prad2sim` executable in the build directory along with the
-macro and config files needed to run it. The digitization sub-project builds
-`PRadDig` and `PRadRec` and copies them to the parent directory.
+macro and config files needed to run it.
+
+CMake options:
+
+| Option | Default | Description |
+|---|---|---|
+| `WITH_GEANT4_UIVIS` | `ON` | Require Geant4 UI/Vis drivers (set `OFF` for batch-only Geant4 builds) |
+| `BUILD_DIGITIZATION` | `ON` | Build the legacy `PRadDig`/`PRadRec` EVIO stage (needs EVIO + PRadAnalyzer) |
+| `PRAD2SIM_USE_CADMESH` | `ON` | CAD (STL) geometry import for prad2/x17 via the vendored CADMesh header |
+
+The prad2/x17 CAD models (~50 MB of STL files) are not version-controlled —
+see `database/CADmodel/README.md` for where to copy them from. Missing models
+are reported and skipped at startup.
 
 ## Running
 
@@ -59,19 +81,44 @@ Output ROOT files are written to `output/` and the run number is taken from
 
 ## Configuration
 
-JSON configs live in `config/` and support inheritance via a `_base` key, so
-each experiment file only needs to override what differs from
-`defaults.json`:
+JSON configs live in `config/` and support inheritance via a `_base` key
+(followed recursively), so each experiment file only needs to override what
+differs from its base:
 
 - `defaults.json` — base parameters (geometry, target, detector positions)
-- `prad.json` — PRad hydrogen-target setup
-- `drad.json` — DRad deuterium-target setup with recoil detector
-- `test.json` — test configuration
+- `prad.json` — PRad hydrogen-target setup (1 GEM station, HyCal at 273.5 cm)
+- `drad.json` — DRad deuterium-target setup with recoil detector and He bag
+- `prad2.json` — PRad-II: two GEM stations (3 mm drift gas, detector IDs 0..3),
+  HyCal geometry generated from the prad2 reconstruction `hycal_map.json`,
+  four-paddle veto scintillator + housing, CAD vacuum-window assembly, and
+  the `VD` virtual plane consumed by `prad2ana_sim2replay`
+- `x17.json` — X17 search (based on `prad2.json`): target at −455 cm, long
+  flight path (GEMs at +6.7/7.1 m, HyCal at +7.5 m), He-bag vacuum exit,
+  beam-pipe shielding; LH2 target by default with a Ta-foil option
+- `test.json` — minimal target + virtual-detector setup
 
-All lengths in JSON are in cm, energies in MeV, angles in degrees. Geant4
-unit conversion happens in the loader. Geometry parameters can also be
-overridden at runtime through the `/prad2sim/...` UI commands defined in the
-messenger classes.
+All lengths in JSON are in cm (except keys suffixed `_mm`), energies in MeV,
+angles in degrees. Geant4 unit conversion happens in the loader. Positions
+can be absolute or target-relative (`gem.center_ref` / `hycal.surface_ref` =
+`"target"`). Geometry parameters can also be overridden at runtime through
+the `/prad2sim/...` UI commands defined in the messenger classes.
+
+## Data interface (PRad-II)
+
+The prad2/x17 truth tree carries everything `prad2ana_sim2replay` (from the
+`prad2` toolkit) needs to produce a `recon` tree in the replayed-data format
+(`prad2evviewer/docs/REPLAYED_DATA.md`): the `VD` plane hits become HyCal
+clusters (smeared, `cl_center` resolved against `hycal_map.json` — the sim
+HyCal is built from the same map), and `GEM` hits with entry/exit positions
+and detector IDs 0..3 feed the HyCal↔GEM matching:
+
+```bash
+prad2ana_sim2replay <ep dir> <ee dir> <ep_lumi> <ee_lumi> -o sim_recon.root
+```
+
+`tests/sim2replay/run_e2e.sh` runs the whole chain and validates the output;
+`tests/regression/` holds the fixed-seed regression harness used to verify
+geometry refactors.
 
 ## Event generators
 
@@ -97,11 +144,19 @@ data products comparable to real PRad data:
 
 ```
 prad2sim.cc          main program (Geant4 RunManager + CLI)
-src/, include/       detector, physics, generator, messenger, I/O classes
-config/              JSON configurations and detector parameter files
-database/            calibration, mapping and pedestal tables
+src/, include/       physics, generator, messenger, SD and I/O classes
+src/detector/        composable DetectorModule subsystems (target, beamline,
+                     vacuum system, GEM, scintillator, HyCal, virtual planes,
+                     CAD inserts) + MaterialBuilder
+include/external/    vendored CADMesh single header (STL import)
+config/              JSON configurations (prad, drad, prad2, x17, test)
+database/            calibration, mapping and geometry tables
+  CADmodel/          CAD STL models (not version-controlled; see README there)
 evgen/               stand-alone physics event generators
-digitization/        EVIO digitization and reconstruction stage
+digitization/        legacy EVIO digitization stage (optional)
+tests/regression/    fixed-seed regression harness (tree-stats diff)
+tests/sim2replay/    data-interface contract + end-to-end validation
+plans/               restructuring plans and findings
 output/              ROOT output files (run number tracked in file.output)
 *.mac                Geant4 macro files (run.mac, vis.mac, gui.mac, init_vis.mac)
 ```

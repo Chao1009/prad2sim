@@ -70,3 +70,6 @@ tests/sim2replay/*.root
 database/CADmodel/*.stl
 database/CADmodel/*.stp
 database/CADmodel/x17/*.stl
+
+# transient regression comparison outputs
+tests/regression/out/

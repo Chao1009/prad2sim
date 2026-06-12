@@ -14,31 +14,40 @@ configs and data interface.
 - [ ] Add a `plans/`-driven `CONTRIBUTING`/style note (naming, units, where
       constants live). Smoke-build all current configs as a baseline.
 
-## Phase 1 — structural refactor (no physics change)
-- [ ] Extract `DefineMaterials()` → `MaterialFactory` (+ PRad2/X17 materials).
-- [ ] Introduce the `DetectorModule` interface and split shared builders into
-      `TargetModule`, `VacuumSystemModule`, `GEMModule`, `ScintillatorModule`,
-      `HyCalModule`, `RecoilModule`. `DetectorConstruction` becomes a thin
-      assembler driven by a config→module table.
-- [ ] Unify `StandardHit` to carry in/out positions + momenta; collapse SD
-      boilerplate into a shared base; evaluate vector branches vs fixed arrays.
-- [ ] Remove the `gRootTree` global; pass the output writer through
-      `ActionInitialization`.
-- [ ] Regression: same config → same `T` tree contents as before the refactor
-      (compare a fixed-seed run bit-for-bit where possible).
+## Phase 1 — structural refactor (no physics change) — DONE 2026-06-12
+- [x] Extract `DefineMaterials()` → `MaterialBuilder` (+ PRad2/X17 materials).
+- [x] `DetectorModule` interface; geometry split into Target/Beamline/
+      VacuumSystem/GEM/HeBag/Scintillator/HyCal/VirtualDet/CadInserts modules
+      under `src/detector/`; `DetectorConstruction` is a thin per-config
+      assembler. (Recoil lives inside `DRadTargetModule` — it is physically
+      mounted in the target gas volume.)
+- [x] Regression: fixed-seed prad/drad/test **bit-identical** before/after
+      (`tests/regression/`, tree-stats diff). One deliberate change:
+      `CalorimeterSD` now takes the crystal-surface z from the geometry
+      instead of a hardcoded PRad-I constant — fixes the PbWO4 attenuation
+      depth for drad (HC energies change there) and makes prad2/x17 possible.
+- [x] In/out positions on `StandardHit` (session 1).
+- [ ] Remove the `gRootTree` global; vector branches vs fixed arrays —
+      deferred (cosmetic; no behavior impact).
 
 ## Phase 2 — generators
 - [ ] `GeneratorFactory` keyed off config; tidy file-gun readers.
 - [ ] Document each `evgen/` program's inputs/outputs in `evgen/README`.
 
-## Phase 3 — new configs
-- [ ] `config/prad2.json` + module variants (3 mm GEM drift, 4-plane
-      scintillator, CAD housing import, PRad-II HyCal map alignment).
-- [ ] `config/x17.json` + X17 vacuum window/adapter (config-driven STL),
-      beam-pipe shielding, X17→e+e- generator (event-file path first).
-- [ ] Per-config smoke tests: builds, no overlaps, SDs attached, N events run,
-      expected branches present (validation matrix in
-      [02-configurations.md](02-configurations.md)).
+## Phase 3 — new configs — DONE 2026-06-12 (except X17 signal generator)
+- [x] `config/prad2.json`: two GEM stations (PRad-II window stack, 3 mm drift
+      SD, DID 0..3 verified), 4-paddle scintillator + SciVD planes, CAD
+      housing/window assembly (config-driven STL list), HyCal **generated
+      from the prad2 `hycal_map.json`** (`database/make_hycal_table_from_map.py`
+      — the legacy table had the lead-glass ring transposed vs the map).
+- [x] `config/x17.json` (based on prad2.json): target −455 cm, GEMs at
+      +6688/7088 mm, HyCal at +7506.464 mm, 12 m world, kX17 vacuum (He bag,
+      thick/hole windows), beam-pipe shielding, X17 adapter STLs at zero
+      offset, LH2/Ta target options.
+- [x] Smoke tests: both run clean; overlap check shows only pre-existing
+      legacy beam-hole slivers (present in prad too) and upstream CAD
+      contact overlaps (µm–0.7 mm, inherited from the STL assembly).
+- [ ] X17→e+e- signal generator (event-file path) — still open.
 
 ## Phase 4 — data interface (the headline goal)
 
@@ -55,16 +64,25 @@ reads, not writing a recon writer.
       (`tests/sim2replay/`).
 - [x] Add `.DID` + `.Xout/.Yout/.Zout` branches to `StandardDetectorSD`
       (the branches `sim2replay` needs). *(written; compile on a Geant4 box)*
-- [ ] **Geant4 geometry (needs a G4 build):**
-  - [ ] Add an enabled **`VD` plane at the HyCal front** (abbrev `VD`,
-        `VD.X/Y/Z/P`); retire/rename the 60-mm scattering-check plane.
-  - [ ] Assign GEM copy numbers 0..3 and set the hit detector id from them so
-        `GEM.DID` is meaningful for 4-GEM matching.
-- [ ] Verify the sim HyCal crystal layout matches `hycal_map.json` x,y so
-      `cl_center` resolves correctly; run a short real `prad2sim` job through
-      `sim2replay` and open the result in `prad2evviewer`.
-- [ ] Get `beamE` (and its cuts) made configurable in `sim2replay` for the
-      1.1 GeV prad/drad configs (upstream PR), or pre-scale.
+- [x] **Geant4 geometry** — DONE 2026-06-12:
+  - [x] Config-driven `VD` plane (`virtual_det` section): prad2/x17 place the
+        annulus just behind the last GEM station (the PRadSim_PRad2
+        convention its sim2replay was written against).
+  - [x] GEM detector IDs 0..3 — already produced by the copy-number scheme
+        once two PRad-II stations exist; verified in output.
+- [x] Sim HyCal built from `hycal_map.json` for prad2/x17 → **all `cl_center`
+      resolve (0 unresolved in E2E)**.
+- [x] **E2E validated** (`tests/sim2replay/run_e2e.sh`): prad2 elastic+møller
+      at 3.5 GeV → `sim2replay` → recon tree (673/800 entries, total_energy
+      ≈ beam, 316 HyCal↔GEM matched pairs).
+- [ ] Upstream `sim2replay` improvements (prad2evviewer repo):
+  1. `beamE` hardcoded 3500 MeV → make configurable (blocks 1.1 GeV
+     prad/drad use).
+  2. Use `VD.Z` from the tree instead of forcing `cl_z = 6225` — removes the
+     radial projection error that limits HyCal↔GEM matching to r ≲ 200 mm
+     (matched-pair mean radius 117 mm in the E2E run).
+  3. The ep/ee interleave condition `if (i + 1 % 4 == 0 ...)` mis-parses
+     (operator precedence) and never mixes as intended.
 - [ ] **Phase B** (fidelity): link `prad2det`, reconstruct from real
       `HC.ModuleEdep` via `fdec::HyCalCluster` + `gem::GemCluster`, write
       `recon` (and optionally raw `events`) via `prad2::SetReconWriteBranches`.

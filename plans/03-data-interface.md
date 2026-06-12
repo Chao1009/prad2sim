@@ -104,10 +104,24 @@ one place the two sides must agree (validate the sim crystal layout against
 - `GEM.DID` is read but several sim forks (e.g. X17) never wrote the branch, so
   their GEM hits collapse to det 0 — prad2sim should write a correct `.DID`.
 
-## 5. Remaining unknowns (non-blocking)
+## 5. E2E result (2026-06-12) and remaining items
+
+**Validated** (`tests/sim2replay/run_e2e.sh`): prad2 config (elastic + møller,
+3.5 GeV, 400+400 events) → installed `sim2replay` → recon tree with 673
+entries, `total_energy` ≈ beam, **all `cl_center` resolved** (the prad2 sim
+HyCal is generated from `hycal_map.json` via
+`database/make_hycal_table_from_map.py`), 316 HyCal↔GEM matched pairs.
+Matching is radius-limited (matched-pair mean r = 117 mm): `sim2replay`
+labels clusters `cl_z = 6225` mm while the VD plane sits at 5907 mm, so the
+GEM projection leaves the 10 mm window beyond r ≈ 200 mm.
+
+**Upstream `sim2replay` suggestions (prad2evviewer):**
+1. Use `sim->VD_z[j]` for `cl_z` (1 line) — removes the radial matching limit.
+2. Make `beamE` (hardcoded 3500 MeV) configurable — blocks 1.1 GeV prad/drad.
+3. Fix the ep/ee interleave `if (i + 1 % 4 == 0 ...)` precedence bug.
+
+**Remaining unknowns (non-blocking):**
 1. Does `prad2evviewer` require `scalers`/`epics`/`runinfo` trees to *exist* to
    open a file, or tolerate their absence? (sim files won't have real ones.)
-2. Exact reconciliation of the sim HyCal crystal layout with `hycal_map.json`
-   numbering for `prad2` configs.
-3. For Phase B: whether `prad2ana_replay_recon` will consume a sim-produced
+2. For Phase B: whether `prad2ana_replay_recon` will consume a sim-produced
    `events` ROOT tree directly, or needs EVIO.
