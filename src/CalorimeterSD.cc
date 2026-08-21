@@ -57,6 +57,7 @@
 #include "G4Track.hh"
 #include "G4VPhysicalVolume.hh"
 
+#include "G4AutoLock.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
@@ -122,6 +123,7 @@ CalorimeterSD::~CalorimeterSD()
 void CalorimeterSD::Initialize(G4HCofThisEvent *HCE)
 {
     if (!fRegistered) {
+        G4AutoLock lock(&gBranchMutex);
         Register(gRootTree->GetTree());
         fRegistered = true;
     }

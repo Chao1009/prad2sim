@@ -65,6 +65,7 @@ set(PRAD2SIM_SOURCES
   src/PrimaryGeneratorAction.cc
   src/PrimaryGeneratorMessenger.cc
   src/RootTree.cc
+  src/RunAction.cc
   src/SimConfig.cc
   src/StandardDetectorSD.cc
   src/StandardHit.cc
@@ -108,7 +109,7 @@ endif()
 # Copy all scripts to the build directory
 # This is so that we can run the executable directly because it relies on these scripts being in the current working directory
 #
-set(PRAD2SIM_RESOURCE_FILES init_vis.mac vis.mac gui.mac run.mac)
+set(PRAD2SIM_RESOURCE_FILES init_vis.mac vis.mac gui.mac run.mac merge.sh)
 
 add_custom_target(copy_files ALL COMMENT "Copy files")
 foreach(_file ${PRAD2SIM_RESOURCE_FILES})

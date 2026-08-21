@@ -44,7 +44,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4Allocator<CalorimeterHit> CalorimeterHitAllocator;
+G4ThreadLocal G4Allocator<CalorimeterHit> *CalorimeterHitAllocator = nullptr;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

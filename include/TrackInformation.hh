@@ -84,18 +84,18 @@ private:
     AncestorMap           fAncestorMap;
 };
 
-extern G4Allocator<TrackInformation> TrackInformationAllocator;
+extern G4ThreadLocal G4Allocator<TrackInformation> *TrackInformationAllocator;
 
 inline void *TrackInformation::operator new (size_t)
 {
-    void *aTrackInfo;
-    aTrackInfo = (void *)TrackInformationAllocator.MallocSingle();
-    return aTrackInfo;
+    if (!TrackInformationAllocator)
+        TrackInformationAllocator = new G4Allocator<TrackInformation>();
+    return (void *)TrackInformationAllocator->MallocSingle();
 }
 
 inline void TrackInformation::operator delete (void *aTrackInfo)
 {
-    TrackInformationAllocator.FreeSingle((TrackInformation *)aTrackInfo);
+    TrackInformationAllocator->FreeSingle((TrackInformation *)aTrackInfo);
 }
 
 inline G4bool TrackInformation::operator ==(const TrackInformation &right) const

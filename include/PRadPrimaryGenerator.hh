@@ -39,6 +39,8 @@
 
 #include "ConfigParser.h"
 
+#include "G4Threading.hh"
+
 #include "TFoamIntegrand.h"
 #include "Math/Interpolator.h"
 
@@ -99,7 +101,12 @@ protected:
     std::unique_ptr<TRandom2> fPseRan;
     std::unique_ptr<TFoam> fZGenerator;
 
-    ConfigParser fParser;
+    // Shared across all worker threads (and shared with DRadPrimaryGenerator,
+    // which inherits these). Only one thread opens the file; all threads then
+    // pull sequential lines from it under fParserMutex, so events are neither
+    // duplicated nor skipped across threads.
+    static ConfigParser *fParser;
+    static G4Mutex fParserMutex;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -55,6 +55,7 @@
 #include "G4VProcess.hh"
 #include "G4VSensitiveDetector.hh"
 
+#include "G4AutoLock.hh"
 #include "G4ThreeVector.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -90,6 +91,7 @@ StepRecordSD::~StepRecordSD()
 void StepRecordSD::Initialize(G4HCofThisEvent *)
 {
     if (!fRegistered) {
+        G4AutoLock lock(&gBranchMutex);
         Register(gRootTree->GetTree());
         fRegistered = true;
     }

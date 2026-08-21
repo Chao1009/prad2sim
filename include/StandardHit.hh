@@ -108,18 +108,18 @@ private:
 
 typedef G4THitsCollection<StandardHit> StandardHitsCollection;
 
-extern G4Allocator<StandardHit> StandardHitAllocator;
+extern G4ThreadLocal G4Allocator<StandardHit> *StandardHitAllocator;
 
 inline void *StandardHit::operator new (size_t)
 {
-    void *aHit;
-    aHit = (void *)StandardHitAllocator.MallocSingle();
-    return aHit;
+    if (!StandardHitAllocator)
+        StandardHitAllocator = new G4Allocator<StandardHit>();
+    return (void *)StandardHitAllocator->MallocSingle();
 }
 
 inline void StandardHit::operator delete (void *aHit)
 {
-    StandardHitAllocator.FreeSingle((StandardHit *)aHit);
+    StandardHitAllocator->FreeSingle((StandardHit *)aHit);
 }
 
 inline G4int StandardHit::GetPID() const

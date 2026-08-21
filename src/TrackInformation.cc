@@ -42,7 +42,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4Allocator<TrackInformation> TrackInformationAllocator;
+G4ThreadLocal G4Allocator<TrackInformation> *TrackInformationAllocator = nullptr;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

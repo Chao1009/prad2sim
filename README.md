@@ -65,6 +65,7 @@ Options:
 | `-c, --conf=FILE` | `config/prad.json` | JSON configuration file |
 | `-p, --physics=LIST` | `FTFP_BERT` | Geant4 reference physics list (suffix `_LOCAL` to use the modified EM list, prefix `EM` for pure EM, optional `_EXTRA`) |
 | `-s, --seed=N` | `random` | Random seed (`random` uses the system clock) |
+| `-t, --nthreads=N` | `1` | Number of worker threads (Geant4 MT build only) |
 | `-h, --help` | | Print usage |
 
 If a macro file is given, the simulation runs in batch mode; otherwise it
@@ -78,6 +79,30 @@ Example batch run:
 
 Output ROOT files are written to `output/` and the run number is taken from
 (and incremented in) `output/file.output`.
+
+### Multi-threading
+
+When built against a multi-threaded Geant4 install (`G4MULTITHREADED` defined
+by the Geant4 installation itself — no extra CMake flags needed), pass `-t N`
+to run with `N` worker threads:
+
+```bash
+./prad2sim -t 8 run.mac
+```
+
+Each worker thread writes its own ROOT file (`output/simrun_N_t0.root` …
+`_t7.root` for `-t 8`) so there is no cross-thread contention on the output
+tree. Merge them into a single file afterward:
+
+```bash
+./merge.sh          # merges all unmerged runs found in output/
+./merge.sh -f       # force re-merge (overwrites existing merged files)
+# or manually for a specific run number:
+hadd output/simrun_N.root output/simrun_N_t*.root
+```
+
+Without `-t` (or in a single-threaded Geant4 build), `prad2sim` behaves
+exactly as before and writes a single `output/simrun_N.root`.
 
 ## Configuration
 
@@ -159,6 +184,7 @@ tests/sim2replay/    data-interface contract + end-to-end validation
 plans/               restructuring plans and findings
 output/              ROOT output files (run number tracked in file.output)
 *.mac                Geant4 macro files (run.mac, vis.mac, gui.mac, init_vis.mac)
+merge.sh             merges per-thread ROOT files from a multi-threaded run
 ```
 
 ## Authors

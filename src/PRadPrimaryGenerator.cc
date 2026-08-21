@@ -61,6 +61,7 @@
 #include "G4VPhysicalVolume.hh"
 #include "G4VPrimaryGenerator.hh"
 
+#include "G4AutoLock.hh"
 #include "G4ios.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTable.hh"
@@ -79,6 +80,13 @@
 
 static double me = 0.510998928 * MeV;
 static double mmu = 105.6583745 * MeV;
+
+// Shared file reader for PRadPrimaryGenerator (and DRadPrimaryGenerator, which
+// inherits it) in multi-threaded mode. All worker threads draw events
+// sequentially from one ConfigParser protected by a mutex, so no event is
+// processed twice and no event is skipped.
+ConfigParser *PRadPrimaryGenerator::fParser = nullptr;
+G4Mutex PRadPrimaryGenerator::fParserMutex = G4MUTEX_INITIALIZER;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -107,10 +115,15 @@ PRadPrimaryGenerator::PRadPrimaryGenerator(G4String type, G4bool rec, G4String p
             path = "moller.dat";
     }
 
-    // only open file, do not read the whole file into memory
-    if (!fParser.OpenFile(path)) {
-        G4cout << "ERROR: failed to read event file " << "\"" << path << "\"" << G4endl;
-        exit(1);
+    // Only one thread opens the file; all threads share the static fParser.
+    // Do not read the whole file into memory.
+    G4AutoLock lock(&fParserMutex);
+    if (!fParser) {
+        fParser = new ConfigParser();
+        if (!fParser->OpenFile(path)) {
+            G4cout << "ERROR: failed to read event file " << "\"" << path << "\"" << G4endl;
+            exit(1);
+        }
     }
 }
 
@@ -127,6 +140,7 @@ PRadPrimaryGenerator::~PRadPrimaryGenerator()
 void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
 {
     if (!fRegistered) {
+        G4AutoLock lock(&gBranchMutex);
         Register(gRootTree->GetTree());
         fRegistered = true;
     }
@@ -158,11 +172,14 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
         int pid[4];
         double p[4][3];
 
-        while (fParser.ParseLine()) {
-            if (!fParser.CheckElements(16))  continue;
-            else {
-                fParser >> pid[0] >> p[0][0] >> p[0][1] >> p[0][2] >> pid[1] >> p[1][0] >> p[1][1] >> p[1][2] >> pid[2] >> p[2][0] >> p[2][1] >> p[2][2] >> pid[3] >> p[3][0] >> p[3][1] >> p[3][2];
-                break;
+        {
+            G4AutoLock lock(&fParserMutex);
+            while (fParser->ParseLine()) {
+                if (!fParser->CheckElements(16))  continue;
+                else {
+                    *fParser >> pid[0] >> p[0][0] >> p[0][1] >> p[0][2] >> pid[1] >> p[1][0] >> p[1][1] >> p[1][2] >> pid[2] >> p[2][0] >> p[2][1] >> p[2][2] >> pid[3] >> p[3][0] >> p[3][1] >> p[3][2];
+                    break;
+                }
             }
         }
 
@@ -196,12 +213,15 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
     double e_h = 0, theta_h = 0, phi_h = 0;
     double e_p = 0, theta_p = 0, phi_p = 0;
 
-    while (fParser.ParseLine()) {
-        if (!fParser.CheckElements(9))
-            continue;
-        else {
-            fParser >> e_l >> theta_l >> phi_l >> e_h >> theta_h >> phi_h >> e_p >> theta_p >> phi_p;
-            break;
+    {
+        G4AutoLock lock(&fParserMutex);
+        while (fParser->ParseLine()) {
+            if (!fParser->CheckElements(9))
+                continue;
+            else {
+                *fParser >> e_l >> theta_l >> phi_l >> e_h >> theta_h >> phi_h >> e_p >> theta_p >> phi_p;
+                break;
+            }
         }
     }
 

@@ -35,19 +35,25 @@
 #include "ActionInitialization.hh"
 
 #include "EventAction.hh"
+#include "GlobalVars.hh"
 #include "PrimaryGeneratorAction.hh"
+#include "RootTree.hh"
+#include "RunAction.hh"
 #include "SimConfig.hh"
 #include "SteppingVerbose.hh"
 #include "TrackingAction.hh"
 
+#include "G4Threading.hh"
 #include "G4VSteppingVerbose.hh"
 #include "G4VUserActionInitialization.hh"
 
 #include "G4String.hh"
 
+#include <string>
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::ActionInitialization(G4String conf, const SimConfig *config) : G4VUserActionInitialization(), fConfig(conf), fSimConfig(config)
+ActionInitialization::ActionInitialization(G4String conf, const SimConfig *config, G4String path) : G4VUserActionInitialization(), fConfig(conf), fSimConfig(config), fPath(path)
 {
     //
 }
@@ -63,6 +69,22 @@ ActionInitialization::~ActionInitialization()
 
 void ActionInitialization::Build() const
 {
+    // Derive per-thread output path.
+    // In MT mode: strip ".root" and append "_tN.root" (N = thread ID).
+    // In ST mode: use fPath as-is.
+    std::string treePath = fPath;
+
+#ifdef G4MULTITHREADED
+    // fPath is e.g. "output/simrun_1.root" -> "output/simrun_1_t0.root"
+    if (treePath.size() > 5 && treePath.substr(treePath.size() - 5) == ".root")
+        treePath = treePath.substr(0, treePath.size() - 5);
+    treePath += "_t" + std::to_string(G4Threading::G4GetThreadId()) + ".root";
+#endif
+
+    // Create the per-thread ROOT tree BEFORE any user action that accesses it.
+    gRootTree = new RootTree(treePath.c_str());
+
+    SetUserAction(new RunAction());
     SetUserAction(new PrimaryGeneratorAction(fConfig, *fSimConfig));
     SetUserAction(new EventAction(fConfig));
     SetUserAction(new TrackingAction());
@@ -72,7 +94,9 @@ void ActionInitialization::Build() const
 
 void ActionInitialization::BuildForMaster() const
 {
-    //
+    // Master thread does not write events; RunAction is still registered
+    // so EndOfRunAction (a no-op when gRootTree is null) is called cleanly.
+    SetUserAction(new RunAction());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

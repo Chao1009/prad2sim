@@ -51,6 +51,7 @@
 #include "G4RunManager.hh"
 #include "G4UserEventAction.hh"
 
+#include "G4AutoLock.hh"
 #include "G4String.hh"
 #include "G4ios.hh"
 
@@ -63,7 +64,10 @@ EventAction::EventAction(G4String conf) : G4UserEventAction(), fEventID(0), fPri
     if (conf == "test")
         fCollName = "VDColl";
 
-    Register(gRootTree->GetTree());
+    {
+        G4AutoLock lock(&gBranchMutex);
+        Register(gRootTree->GetTree());
+    }
 
     eventMessenger = std::make_unique<EventMessenger>(this);
 }

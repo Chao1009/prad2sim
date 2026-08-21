@@ -54,6 +54,7 @@
 #include "G4VPhysicalVolume.hh"
 #include "G4VSensitiveDetector.hh"
 
+#include "G4AutoLock.hh"
 #include "G4ThreeVector.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -101,6 +102,7 @@ StandardDetectorSD::~StandardDetectorSD()
 void StandardDetectorSD::Initialize(G4HCofThisEvent *HCE)
 {
     if (!fRegistered) {
+        G4AutoLock lock(&gBranchMutex);
         Register(gRootTree->GetTree());
         fRegistered = true;
     }

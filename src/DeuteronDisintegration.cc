@@ -47,6 +47,7 @@
 #include "G4VPhysicalVolume.hh"
 #include "G4VPrimaryGenerator.hh"
 
+#include "G4AutoLock.hh"
 #include "G4ios.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTable.hh"
@@ -81,6 +82,7 @@ DeuteronDisintegration::~DeuteronDisintegration()
 void DeuteronDisintegration::GeneratePrimaryVertex(G4Event *anEvent)
 {
     if (!fRegistered) {
+        G4AutoLock lock(&gBranchMutex);
         Register(gRootTree->GetTree());
         fRegistered = true;
     }

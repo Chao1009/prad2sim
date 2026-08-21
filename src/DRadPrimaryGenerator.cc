@@ -47,6 +47,7 @@
 #include "G4VPhysicalVolume.hh"
 #include "G4VPrimaryGenerator.hh"
 
+#include "G4AutoLock.hh"
 #include "G4ios.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTable.hh"
@@ -73,10 +74,15 @@ DRadPrimaryGenerator::DRadPrimaryGenerator(G4String type, G4bool rec, G4String p
             path = "edepn.dat";
     }
 
-    // OpenFile doesn't read the whole file into memory
-    if (!fParser.OpenFile(path)) {
-        G4cout << "ERROR: failed to read event file " << "\"" << path << "\"" << G4endl;
-        exit(1);
+    // Only one thread opens the file; all threads share the static fParser
+    // (inherited from PRadPrimaryGenerator). Do not read the whole file into memory.
+    G4AutoLock lock(&fParserMutex);
+    if (!fParser) {
+        fParser = new ConfigParser();
+        if (!fParser->OpenFile(path)) {
+            G4cout << "ERROR: failed to read event file " << "\"" << path << "\"" << G4endl;
+            exit(1);
+        }
     }
 }
 
@@ -92,6 +98,7 @@ DRadPrimaryGenerator::~DRadPrimaryGenerator()
 void DRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
 {
     if (!fRegistered) {
+        G4AutoLock lock(&gBranchMutex);
         Register(gRootTree->GetTree());
         fRegistered = true;
     }
@@ -123,12 +130,15 @@ void DRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
     double e_h = 0, theta_h = 0, phi_h = 0;
     double e_p = 0, theta_p = 0, phi_p = 0;
 
-    while (fParser.ParseLine()) {
-        if (!fParser.CheckElements(9))
-            continue;
-        else {
-            fParser >> e_l >> theta_l >> phi_l >> e_h >> theta_h >> phi_h >> e_p >> theta_p >> phi_p;
-            break;
+    {
+        G4AutoLock lock(&fParserMutex);
+        while (fParser->ParseLine()) {
+            if (!fParser->CheckElements(9))
+                continue;
+            else {
+                *fParser >> e_l >> theta_l >> phi_l >> e_h >> theta_h >> phi_h >> e_p >> theta_p >> phi_p;
+                break;
+            }
         }
     }
 

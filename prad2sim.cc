@@ -42,11 +42,18 @@
 #include "SimConfig.hh"
 #include "SteppingVerbose.hh"
 
+#ifdef G4MULTITHREADED
+    #include "G4MTRunManager.hh"
+#else
+    #include "G4RunManager.hh"
+#endif
+
 #include "G4PhysListFactory.hh"
-#include "G4RunManager.hh"
 #include "G4StepLimiterPhysics.hh"
 #include "G4UImanager.hh"
 #include "G4VModularPhysicsList.hh"
+
+#include "TROOT.h"
 
 #include "G4BuilderType.hh"
 #include "G4ios.hh"
@@ -69,7 +76,12 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RootTree *gRootTree = nullptr;
+// Thread-local: each worker thread owns its own ROOT output tree.
+// In single-threaded builds G4ThreadLocal expands to nothing.
+G4ThreadLocal RootTree *gRootTree = nullptr;
+
+// Mutex protecting all TTree::Branch() calls across worker threads.
+G4Mutex gBranchMutex = G4MUTEX_INITIALIZER;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -79,6 +91,7 @@ void usage(int, char **argv)
     printf("  -c, --conf=FILE          Set JSON config file (default: config/prad.json)\n");
     printf("  -s, --seed=1             Set random seed\n");
     printf("  -p, --physics=FTFP_BERT  Set physics list\n");
+    printf("  -t, --nthreads=1         Set number of worker threads (MT build only)\n");
     printf("  -h, --help               Print usage\n");
 }
 
@@ -90,6 +103,7 @@ int main(int argc, char **argv)
     std::string physics_list = "FTFP_BERT";
     std::string seed = "random";
     std::string macro;
+    int nthreads = 1;
 
     while (1) {
         static struct option long_options[] = {
@@ -97,11 +111,12 @@ int main(int argc, char **argv)
             {"conf", required_argument, 0, 'c'},
             {"physics", required_argument, 0, 'p'},
             {"seed", required_argument, 0, 's'},
+            {"nthreads", required_argument, 0, 't'},
             {0, 0, 0, 0}
         };
 
         int option_index = 0;
-        int c = getopt_long(argc, argv, "c:hp:s:", long_options, &option_index);
+        int c = getopt_long(argc, argv, "c:hp:s:t:", long_options, &option_index);
 
         if (c == -1)
             break;
@@ -122,6 +137,10 @@ int main(int argc, char **argv)
 
         case 's':
             seed = optarg;
+            break;
+
+        case 't':
+            nthreads = std::stoi(optarg);
             break;
 
         case '?':
@@ -149,6 +168,11 @@ int main(int argc, char **argv)
     } else
         G4Random::setTheSeed(stol(seed));
 
+    // Enable ROOT thread safety before any ROOT operations (required for MT).
+#ifdef G4MULTITHREADED
+    ROOT::EnableThreadSafety();
+#endif
+
     // Initialize output root tree
     std::ifstream data_file("output/file.output");
     std::string file_name;
@@ -175,12 +199,25 @@ int main(int argc, char **argv)
     data_file_o << file_name << "  " << run_number + 1;
     data_file_o.close();
 
-    std::string path = "output/" + file_name + "_" + std::to_string(run_number) + ".root";
-    gRootTree = new RootTree(path.c_str());
+    // Base output path (per-thread suffix appended in ActionInitialization::Build())
+    std::string outPath = "output/" + file_name + "_" + std::to_string(run_number) + ".root";
 
-    // Construct the default run manager
+    // Construct the run manager
     G4VSteppingVerbose::SetInstance(new SteppingVerbose);
+
+#ifdef G4MULTITHREADED
+    G4MTRunManager *runManager = new G4MTRunManager;
+    runManager->SetNumberOfThreads(nthreads);
+    std::cout << "Running in MT mode with " << nthreads << " worker thread(s)." << std::endl;
+    std::cout << "Output files: " << outPath.substr(0, outPath.size() - 5)
+              << "_t0.root ... _t" << (nthreads - 1) << ".root" << std::endl;
+    std::cout << "Merge with: hadd " << outPath << " "
+              << outPath.substr(0, outPath.size() - 5) << "_t*.root" << std::endl;
+#else
     G4RunManager *runManager = new G4RunManager;
+    std::cout << "Running in single-threaded mode." << std::endl;
+    std::cout << "Output file: " << outPath << std::endl;
+#endif
 
     // Set physics list
     bool pure_em = false;
@@ -244,7 +281,7 @@ int main(int argc, char **argv)
     DetectorConstruction *detector = new DetectorConstruction(conf, simConfig);
     runManager->SetUserInitialization(detector);
 
-    ActionInitialization *action = new ActionInitialization(conf, &simConfig);
+    ActionInitialization *action = new ActionInitialization(conf, &simConfig, outPath);
     runManager->SetUserInitialization(action);
 
     // Get the pointer to the User Interface manager
@@ -281,10 +318,9 @@ int main(int argc, char **argv)
 #endif
     }
 
-    // Job termination
+    // Job termination (per-thread gRootTree is deleted by RunAction::EndOfRunAction)
     delete runManager;
-    delete gRootTree;
-
+    std::cout << "Simulation complete." << std::endl;
     return 0;
 }
 

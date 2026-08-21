@@ -47,7 +47,7 @@ class G4VSteppingVerbose;
 class ActionInitialization : public G4VUserActionInitialization
 {
 public:
-    ActionInitialization(G4String conf, const SimConfig *config);
+    ActionInitialization(G4String conf, const SimConfig *config, G4String path);
     virtual ~ActionInitialization();
 
     void Build() const;
@@ -57,6 +57,7 @@ public:
 private:
     G4String fConfig;
     const SimConfig *fSimConfig;
+    G4String fPath; // base output path, e.g. "output/simrun_1.root"
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

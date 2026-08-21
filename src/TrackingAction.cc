@@ -50,6 +50,8 @@
 #include "G4TrackingManager.hh"
 #include "G4UserTrackingAction.hh"
 
+#include "G4AutoLock.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 TrackingAction::TrackingAction() : G4UserTrackingAction(), fNoSecondary(false), fSaveTrackInfo(false), fRegistered(false)
@@ -93,6 +95,7 @@ void TrackingAction::PreUserTrackingAction(const G4Track *aTrack)
 
     if (fSaveTrackInfo) {
         if (!fRegistered) {
+            G4AutoLock lock(&gBranchMutex);
             Register(gRootTree->GetTree());
             fRegistered = true;
         }
